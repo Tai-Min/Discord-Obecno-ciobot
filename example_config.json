@@ -1,0 +1,10 @@
+{
+    "token" : "<YOUR_DISCORD_TOKEN>",
+    "commandPrefix":"!",
+    "statusCommand":"status",
+    "helpCommand":"help",
+    "infoCommand":"info",
+    "reportCommand":"raport",
+    "allowedRoles":["admin"],
+    "studentRoles":["student"]
+}
