@@ -141,7 +141,7 @@ const getHelpMsg = () => {
 const getInfoMsg = () => {
     return `
 Bot stworzony w celu sprawdzenia obecności na zajęciach online na pierwszym semestrze studiow magisterskich na Wydziale Elektrotechniki i Automatyki na Politechnice Gdańskiej
-https://github.com/Tai-Min
+https://github.com/Tai-Min/Discord-Obecnosciobot
 
 The MIT License
 

@@ -5,6 +5,7 @@
     "helpCommand":"help",
     "infoCommand":"info",
     "reportCommand":"raport",
-    "allowedRoles":["admin"],
-    "studentRoles":["student"]
+    "allowedRoles":["Admin", "Owner", "Presenter"],
+    "studentRoles":["Admin", "Owner", "Student"],
+    "presenterRoles":["Presenter"]
 }
