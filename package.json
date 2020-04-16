@@ -3,14 +3,18 @@
     "version": "0.0.1",
     "dependencies": {
         "discord.js": "^12.1.1",
-        "moment": "^2.24.0",
-        "typescript": "^3.8.3"
+        "moment-timezone": "^0.5.28"
     },
     "devDependencies": {
-        "@types/node": "^13.11.1"
+        "@types/node": "^13.11.1",
+        "typescript": "^3.8.3"
     },
     "scripts": {
         "start": "tsc && node bot.js"
+    },
+    "repository": {
+        "type":"git",
+        "url":"https://github.com/Tai-Min/Discord-Obecnosciobot"
     },
     "description": "Sprawdzanie obecnosci na wykladach prowadzonych w aplikacji Discord",
     "main": "bot.ts",

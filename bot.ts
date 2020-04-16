@@ -1,5 +1,5 @@
 const Discord = require('discord.js');
-const moment = require('moment');
+const moment = require('moment-timezone');
 const config = require('./config.json');
 
 moment.locale('pl'); 
@@ -114,7 +114,7 @@ const getStatusMsg = (guild, channel)=> {
     });
 
     var str = `
-    ${moment().format('LLL')}
+    ${moment().tz('Europe/Warsaw').format('LLL')}
     Obecność: ${presentStudents.size}/${totalStudents.size} całkowitej ilości studentów na serwerze.
     `;
     return str;
@@ -159,7 +159,7 @@ const getReportMessage = (guild, channel) => {
 
     var bufSize = Buffer.byteLength(csv, 'utf8');
     var buf = Buffer.alloc(bufSize, 'utf8');
-    var filename = "Wyklad_" + moment().format('YYYY_MM_DD_HH_mm_ss') + ".csv";
+    var filename = "Wyklad_" + moment().tz('Europe/Warsaw').format('YYYY_MM_DD_HH_mm_ss') + ".csv";
 
     buf.write(csv);
     return ["\nW załączniku znajduje się lista obecności:", {"files" : [{
