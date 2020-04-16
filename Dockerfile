@@ -2,13 +2,15 @@ FROM node:12
 
 ENV PATH=$PATH:/home/node/node_modules/.bin
 
-WORKDIR /home/node
+USER root 
 
-RUN chown node /home/node
+RUN chown -R node /home/node
 
 USER node
 
-COPY package*.json ./home/node
+WORKDIR /home/node
+
+COPY package.json ./home/node
 
 COPY . .
 
