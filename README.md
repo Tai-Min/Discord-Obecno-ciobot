@@ -14,7 +14,7 @@ Po zainstalowaniu wymaganych narzędzi należy zmienić nazwę pliku example_con
 * reportCommand - Po wywołaniu komendy, na kanał tekstowy wysyłany jest plik csv z wypisanymi osobami przebywającymi na tym samym kanale głosowym, co osoba wywołująca komendę. Do pliku wpisywane są tylko osoby posiadające rolę zawartą w polu "studentRoles".
 * allowedRoles - Lista ról, które mogą wywoływać komendy bota.
 * studentRole - Role przydzielane studentom.
-* presenterRoles - Role przydzielane wykładowcom. Osoby z rangą zawartą w tej liście nie będą wliczane do studentów pomimo posiadania rangi student.
+* presenterRoles - Role przydzielane wykładowcom.
 
 ## Uruchomienie bota
 W folderze projektu, w oknie poleceń należy wywołać:
