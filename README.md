@@ -31,3 +31,13 @@ https://<span></span>discordapp.<span></span>com/oauth2/authorize?client_id=<CLI
 Gdzie CLIENT_ID to umieszczone jest na https://discordapp.com/developers w zakładce General Information.
 
 Żeby bot poprawnie działał, w pożądanych kanałach tekstowych musi mieć ustawione uprawnie czytania/wysyłania/usuwania wiadomości oraz załączanie plików i linków.
+
+## Docker
+```
+docker pull node
+```
+W katalogu projektu:
+```
+docker-compose build
+docker-compose up -d
+```

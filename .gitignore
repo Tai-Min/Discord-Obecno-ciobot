@@ -2,3 +2,4 @@ config.json
 node_modules/
 bot.js
 yarn-error.log
+package-lock.json
