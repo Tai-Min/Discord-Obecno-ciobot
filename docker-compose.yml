@@ -1,0 +1,11 @@
+version: "2"
+services:
+  node:
+    image: "node:12"
+    build: .
+    working_dir: /home/node
+    environment:
+      - NODE_ENV=production
+    expose:
+      - 80
+    restart: unless-stopped
