@@ -17,6 +17,10 @@ const allowedRoles = config["allowedRoles"];
 const studentRoles = config["studentRoles"];
 const presenterRoles = config["presenterRoles"];
 
+/**
+ * Check whether member is allowed to use bot's commands.
+ * @param member Member to be checked.
+ */
 const isAllowed = (member) => {
     for(var i = 0; i < allowedRoles.length; i++){
         if(member.roles.cache.some(role => role.name === allowedRoles[i])){
@@ -26,15 +30,19 @@ const isAllowed = (member) => {
     return false;
 }
 
+/**
+ * Check whether member is a student.
+ * @param member Member to be checked.
+ */
 const isStudent = (member)=> {
     if(member.bot === true)
         return false;
 
-    for(var i = 0; i < studentRoles.length; i++){
+    /*for(var i = 0; i < presenterRoles.length; i++){
         if(member.roles.cache.some(role => role.name === presenterRoles[i])){
             return false;
         }     
-    }
+    }*/
 
     for(var i = 0; i < studentRoles.length; i++){
         if(member.roles.cache.some(role => role.name === studentRoles[i])){
@@ -44,12 +52,21 @@ const isStudent = (member)=> {
     return false;
 }
 
+/**
+ * Check whether given string is a command.
+ * Given string should have prefix removed.
+ * @param msg String to be checked.
+ */
 const isCommand = (msg: String) => {
     if(commands.includes(msg.toString()))
         return true;
     return false;
 }
 
+/**
+ * Check whether given string is a valid command.
+ * @param msg String to be checked
+ */
 const isValidCommand = (msg: String) => {
     if(msg.length === 0){
         return false;
@@ -63,6 +80,14 @@ const isValidCommand = (msg: String) => {
     return true;
 }
 
+/**
+ * Change member structure received from guild.members.cache info
+ * something silmilar to channel.members structure.
+ * This function is used only receive valid structure required for isStudent function
+ * and only fills fields required by this function.
+ * @param member Member to be transformed.
+ * @param guild Member's server.
+ */
 const transformMember = (member, guild) => {
     var memberTransformed = {
         "roles":{
@@ -75,6 +100,11 @@ const transformMember = (member, guild) => {
     return memberTransformed;
 }
 
+/**
+ * Receive string message containing how many students are present during the class.
+ * @param guild Selected server.
+ * @param channel Channel in said server.
+ */
 const getStatusMsg = (guild, channel)=> {
     var presentStudents = channel.members.filter(member => isStudent(member));
 
@@ -90,6 +120,10 @@ const getStatusMsg = (guild, channel)=> {
     return str;
 }
 
+/**
+ * Change JSON structure into CSV string.
+ * @param data Data to be converted to csv.
+ */
 const JSONtoCSV = (data) => {
     var csv = data.map(function(d){
         return JSON.stringify(Object.values(d));
@@ -99,6 +133,13 @@ const JSONtoCSV = (data) => {
     return csv;
 }
 
+/**
+ * Receive array containing two elements: 
+ * The first one is a string message and the second one
+ * is structure with CSV file with student presence during class.
+ * @param guild Selected server.
+ * @param channel Channel in said server.
+ */
 const getReportMessage = (guild, channel) => {
     var presence = [];
     var cnt = 1;
@@ -116,8 +157,8 @@ const getReportMessage = (guild, channel) => {
     });
     var csv = JSONtoCSV(presence);
 
-    var bufSize = csv.length;
-    var buf = Buffer.alloc(bufSize);
+    var bufSize = Buffer.byteLength(csv, 'utf8');
+    var buf = Buffer.alloc(bufSize, 'utf8');
     var filename = "Wyklad_" + moment().format('YYYY_MM_DD_HH_mm_ss') + ".csv";
 
     buf.write(csv);
@@ -145,10 +186,12 @@ https://github.com/Tai-Min/Discord-Obecnosciobot
 
 The MIT License
 
-Copyright 2020 Mateusz Pająk
+Copyright (c) 2020 Mateusz Pająk
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     `;
 }
@@ -158,7 +201,7 @@ client.on('ready', () => {
 });
 
 client.on('message', msg => {
-  if(isValidCommand(msg.content)){
+  if(isValidCommand(msg.content.trim())){
 
       if(!isAllowed(msg.member)){
         msg.delete();
