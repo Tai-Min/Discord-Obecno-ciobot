@@ -15,6 +15,7 @@ COPY package.json ./home/node
 COPY . .
 
 RUN yarn install
+RUN tsc
 
 EXPOSE 80
 

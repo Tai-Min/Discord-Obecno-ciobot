@@ -7,6 +7,9 @@ services:
     working_dir: /home/node
     environment:
       - NODE_ENV=production
+    volumes:
+      - ./config:/home/node/config
+      - ./db:/home/node/db
     expose:
       - 80
     restart: unless-stopped

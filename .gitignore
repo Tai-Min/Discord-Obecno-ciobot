@@ -1,5 +1,7 @@
 config.json
+db.json
 node_modules/
 bot.js
 yarn-error.log
 package-lock.json
+user_kicked.png
