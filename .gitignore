@@ -2,6 +2,10 @@ config.json
 db.json
 node_modules/
 bot.js
+db.js
+roles.js
+helpers.js
+commands.js
 yarn-error.log
 package-lock.json
 user_kicked.png

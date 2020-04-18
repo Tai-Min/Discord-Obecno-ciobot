@@ -1,0 +1,24 @@
+{
+    "token" : "<YOUR DISCORD TOKEN>",
+    
+    "timezone": "Europe/Warsaw",
+
+    "commandPrefix":"!",
+
+    "statusCommand":"status",
+    "helpCommand":"help",
+    "infoCommand":"info",
+    "raportCommand":"rapirt",
+    "addStudentCommand":"add",
+    "removeStudentCommand":"remove",
+    "checkStudentCommand":"check",
+    "strictModeCommand":"restrict",
+    "dumpCommand":"list",
+    "insertAllCommand":"collect",
+    "cleanUpListCommand": "clear",
+    "insertListCommand": "replace",
+
+    "presenterRoles":["Presenter"],
+    "adminRoles":["Owner", "Admin"],
+    "studentRoles":["Owner", "Admin", "Student"]
+}

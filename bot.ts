@@ -1,130 +1,205 @@
 const Discord = require('discord.js');
 const moment = require('moment-timezone');
+const fetch = require('node-fetch');
 const config = require('./config/config.json');
-var accents = require('remove-accents');
-
-const low = require('lowdb');
-const FileSync = require('lowdb/adapters/FileSync')
-const adapter = new FileSync('./db/db.json')
-const db = low(adapter);
+import { helpers } from './helpers';
+import { commands } from './commands';
+import { db } from './db';
+import { roles } from './roles';
 
 moment.locale('pl');
-db.defaults({ students: [], presenters: [], strict_mode: false }).write();
 
 const client = new Discord.Client();
 
-const commandPrefix = config["commandPrefix"];
-const raportCommand = config["raportCommand"];
-const statusCommand = config["statusCommand"];
-const helpCommand = config["helpCommand"];
-const infoCommand = config["infoCommand"];
-const addStudentCommand = config["addStudentCommand"];
-const removeStudentCommand = config["removeStudentCommand"];
-const checkStudentCommand = config["checkStudentCommand"];
-const strictModeCommand = config["strictModeCommand"];
+const replyHelp = (msg, args) => {
+    if (args.length !== 0) {
+        replyWarn(msg, "paramMismatch");
+        return;
+    }
 
-const presenterCommands = [helpCommand, raportCommand, infoCommand, statusCommand];
-const adminCommands = [addStudentCommand, removeStudentCommand, checkStudentCommand, strictModeCommand];
-const allCommands = presenterCommands.concat(adminCommands);
-const voiceChannelRequiredCommands = [raportCommand, statusCommand];
+    let msgStr = "<<Coś poszło nie tak (replyHelp)>>";
+    if (roles.isAdmin(msg.member)) {
+        msgStr =
+            `
+Komendy prowadzącego:
+${commands.commandPrefix}${commands.helpCommand} - Wyświetla tą wiadomość.
+${commands.commandPrefix}${commands.statusCommand} - Wyświetla aktualną frekwencję na wykładzie, wymaga obecności na kanale głosowym.
+${commands.commandPrefix}${commands.raportCommand} - Generuje plik csv z obecnością, wymaga obecności na kanale głosowym. 
+    * W trybie restrykcyjnym lista generowana jest na podstawie listy studentów.
+    * W trybie swobodnym lista generowana jest najpierw na podstawie pseudonimu a w przypadku jego braku, na podstawie nazwy użytkownika.
+${commands.commandPrefix}${commands.infoCommand} - Wyświetla informacje o tym bocie.
 
-const presenterRoles = config["presenterRoles"];
-const adminRoles = config["adminRoles"];
-const studentRoles = config["studentRoles"];
+Komendy administracyjne:
+${commands.commandPrefix}${commands.addStudentCommand} "<IMIE NAZWISKO>" "<TAG DISCORDA>" - Dodaje studenta do listy studentów.
+${commands.commandPrefix}${commands.removeStudentCommand} <TAG DISCORDA> - Usuwa studenta z listy studentów.
+${commands.commandPrefix}${commands.checkStudentCommand} imie "<IMIE NAZWISKO>" | tag "<TAG DISCORDA>" - Sprawdza, czy student znajduje się na liście studentów.
+${commands.commandPrefix}${commands.dumpCommand} - Wypisuje wszystkie osoby na liście studentów do pliku json.
+${commands.commandPrefix}${commands.insertAllCommand} - Dodaje do listy studentów wszystkie osoby posiadające przynajmniej jedną z roli studenta, zwraca logi operacji załączone w pliku txt.
+${commands.commandPrefix}${commands.cleanUpListCommand} - Czyści listę studentów z nieaktualnych tagów, powtórek tagów oraz powtórek imion i nazwisk (w tym podobnych imion i nazwisk). W przypadku napotkania powtórki usuwane są wszystkie powrórki.
+${commands.commandPrefix}${commands.insertListCommand} - Aktualizuje listę studentów na podstawie załączonego pliku json (format taki sam jak uzyskany przy pomocy komendy ${commands.commandPrefix}${commands.dumpCommand})
+${commands.commandPrefix}${commands.strictModeCommand} on|off - Włącza lub wyłącza tryb restrykcyjny (wstęp do kanałów głosowych tylko na podstawie listy studentów).
 
-const isPresenter = (member) => {
-    if (member.bot === true)
-        return false;
+Ta wiadomość zniknie za 60 sekund...`
+            ;
+    }
+    else if (roles.isPresenter(msg.member)) {
+        msgStr =
+            `
+${commands.commandPrefix}${commands.helpCommand} - Wyświetla tą wiadomość.
+${commands.commandPrefix}${commands.statusCommand} - Wyświetla aktualną frekwencję na wykładzie, wymaga obecności na kanale głosowym.
+${commands.commandPrefix}${commands.raportCommand} - Generuje plik csv z obecnością, wymaga obecności na kanale głosowym. 
+    * W trybie restrykcyjnym lista generowana jest na podstawie listy studentów.
+    * W trybie swobodnym lista generowana jest najpierw na podstawie pseudonimu a w przypadku jego braku, na podstawie nicku.
+${commands.commandPrefix}${commands.infoCommand} - Wyświetla informacje o tym bocie.
+    
+Ta wiadomość zniknie za 60 sekund...`
+            ;
+    }
 
-    for (var i = 0; i < presenterRoles.length; i++) {
-        if (member.roles.cache.some(role => role.name === presenterRoles[i])) {
-            return true;
+    msg.reply(msgStr).then((reply) => {
+        msg.delete();
+        reply.delete({ "timeout": 60000 });
+    });
+}
+
+const replyStatus = (msg, args) => {
+    if (args.length !== 0) {
+        replyWarn(msg, "paramMismatch");
+        return;
+    }
+
+    const channelID = msg.member.voice.channelID;
+    const channel = client.channels.cache.get(channelID);
+
+    const presentStudents = channel.members.filter(member => roles.isStudent(member));
+
+    let totalStudents; 
+    let msgStr;
+    if(db.isStrictMode()){
+        totalStudents = db.dumpAllStudents().length;
+        msgStr =
+        `${moment().tz(config["timezone"]).format('LLL')}
+        Obecność: ${presentStudents.size}/${totalStudents} studentów na serwerowej liście studentów.`;
+    }
+    else{
+        totalStudents = msg.member.guild.members.cache.filter((member) => {
+            const memberTransformed = helpers.transformMember(member);
+            return roles.isStudent(memberTransformed);
+        });
+        totalStudents = totalStudents.size;
+        msgStr =
+        `${moment().tz(config["timezone"]).format('LLL')}
+
+Obecność: ${presentStudents.size}/${totalStudents} całkowitej ilości studentów na serwerze.`;
+    }
+
+    msg.reply(msgStr).then(() => {
+        msg.delete();
+    });
+}
+
+const replyRaport = (msg, args) => {
+    if (args.length !== 0) {
+        replyWarn(msg, "paramMismatch");
+        return;
+    }
+
+    const presence = [];
+    let cnt = 1;
+
+    const channelID = msg.member.voice.channelID;
+    const channel = client.channels.cache.get(channelID);
+
+    let errLog = "";
+
+    // for each member in voice channel
+    channel.members.forEach(member => {
+        const memberTransformed = helpers.transformMember(member); // for role.isX() functions
+
+        if (roles.isStudent(memberTransformed)) {
+            // if strict then fill presence list with data from database
+            if (db.isStrictMode()) {
+                try {
+                    const student = db.getStudent(member.user.tag);
+                    presence.push({ "id": cnt, "osoba": student.name, "tag": student.tag });
+                }
+                // student in voice channel not found in database
+                catch (error) {
+                    errLog +=
+                        `
+UWAGA: Użytkownik ${member.nickname}, ${member.user.username}, ${member.user.tag} nie znajduje się na liście studentów i pomimo załączonego trybu restrykcyjnego znajduje się na kanale głosowym. 
+To nie powinno się zdarzyć.
+Użytkownik dodany do listy obecnosci na podstawie pseudonimu lub nazwy użytkownika.`;
+
+                    // add not found user based on it's nickname or username
+                    const name = member.nickname ? member.nickname : member.user.username;
+                    presence.push({ "id": cnt, "osoba": name, "tag": member.user.tag });
+                }
+            }
+            // not strict mode - add user based on nickname or username
+            else {
+                const name = member.nickname ? member.nickname : member.user.username;
+                presence.push({ "id": cnt, "osoba": name, "tag": member.user.tag });
+            }
+            cnt++;
         }
+    });
+
+    errLog += "\n";
+
+    //create csv file
+    const filename = "Wyklad_" + moment().tz(config["timezone"]).format('YYYY_MM_DD_HH_mm_ss') + ".csv";
+    const csv = helpers.JSONtoCSV(presence);
+    const bufSize = Buffer.byteLength(csv, 'utf8');
+    const buf = Buffer.alloc(bufSize, 'utf8');
+    buf.write(csv);
+
+    const msgArr = [
+        `
+W załączniku znajduje się lista obecności.
+
+Plik ma formę:
+Liczba porządkowa, imię i nazwisko, tag Discord
+
+UWAGA PLIK NALEŻY OTWORZYĆ W NOTATNIKU ZE WZGLĘDU NA TO, ŻE EXCEL NIE KODUJE DOBRZE POLSKICH ZNAKÓW.`
+        , {
+            "files": [{
+                attachment: buf,
+                name: filename
+            }]
+        }];
+
+    msg.reply(errLog + msgArr[0], msgArr[1]).then(() => {
+        msg.delete();
+    });
+}
+
+const replyInfo = (msg, args) => {
+
+    if (args.length !== 0) {
+        replyWarn(msg, "paramMismatch");
+        return;
     }
-    return false;
-}
 
-const isAdmin = (member) => {
-    if (member.bot === true)
-        return false;
+    const msgStr =
+        `
+Bot stworzony w celu sprawdzania obecności na zajęciach online na pierwszym semestrze studiow magisterskich na Wydziale Elektrotechniki i Automatyki Politechniki Gdańskiej.
+https://github.com/Tai-Min/Discord-Obecnosciobot
 
-    for (var i = 0; i < adminRoles.length; i++) {
-        if (member.roles.cache.some(role => role.name === adminRoles[i])) {
-            return true;
-        }
-    }
-    return false;
-}
+The MIT License
 
-const isStudent = (member) => {
-    if (member.bot === true)
-        return false;
+Copyright (c) 2020 Mateusz Pająk
 
-    for (var i = 0; i < studentRoles.length; i++) {
-        if (member.roles.cache.some(role => role.name === studentRoles[i])) {
-            return true;
-        }
-    }
-    return false;
-}
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-const isCommand = (msg: String) => {
-    if (allCommands.includes(msg.toString()))
-        return true;
-    return false;
-}
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-const isAdminCommand = (msg: String) => {
-    if (adminCommands.includes(msg.toString()))
-        return true;
-    return false;
-}
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.`;
 
-const isPresenterCommand = (msg: String) => {
-    if (presenterCommands.includes(msg.toString()))
-        return true;
-    return false;
-}
-
-const requiresVoiceChannel = (msg: String) => {
-    if (voiceChannelRequiredCommands.includes(msg.toString()))
-        return true;
-    return false;
-}
-
-const hasPrefix = (msg: String) => {
-    if (msg.length === 0) {
-        return false;
-    }
-    if (msg[0] !== commandPrefix) {
-        return false;
-    }
-    return true;
-}
-
-const removePrefix = (command: String) => {
-    return command.slice(1, command.length);
-}
-
-const transformMember = (member, guild) => {
-    var memberTransformed = {
-        "roles": {
-            "cache": member._roles.map((roleId) => {
-                return guild.roles.cache.get(roleId);
-            })
-        },
-        "bot": member.user.bot
-    }
-    return memberTransformed;
-}
-
-const JSONtoCSV = (data) => {
-    var csv = data.map(function (d) {
-        return JSON.stringify(Object.values(d));
-    })
-        .join('\n')
-        .replace(/(^\[)|(\]$)|(\")/mg, '');
-    return csv;
+    msg.reply(msgStr).then((reply) => {
+        msg.delete();
+        reply.delete({ "timeout": 50000 });
+    });
 }
 
 const replyAdd = (msg, args) => {
@@ -133,17 +208,16 @@ const replyAdd = (msg, args) => {
         return;
     }
 
-    var person = args[0];
-    var tag = args[1];
-    var personFixed = accents.remove(person.toLowerCase());
+    const name = args[0];
+    const tag = args[1];
 
-    var msgStr;
-    if (!db.get("students").find({ name: personFixed, tag: tag }).value()) {
-        db.get("students").push({ name: personFixed, tag: tag }).write();
-        msgStr = `Dodano ${person} do listy studentów.`;
+    let msgStr;
+    if (db.addStudent(name, tag)) {
+        msgStr = `Dodano ${name} do listy studentów.`;
     }
     else {
-        msgStr = `${person} znajduje się już na liście studentów.`;
+        const user = db.getStudent(tag);
+        msgStr = `${tag} znajduje się już na liście studentów jako ${user.name}.`;
     }
 
     msg.reply(msgStr).then((reply) => {
@@ -153,21 +227,19 @@ const replyAdd = (msg, args) => {
 }
 
 const replyRemove = (msg, args) => {
-    if (args.length !== 2) {
+    if (args.length !== 1) {
         replyWarn(msg, "paramMismatch");
         return;
     }
-    var person = args[0];
-    var tag = args[1];
-    var personFixed = accents.remove(person.toLowerCase());
 
-    var msgStr;
-    if (!db.get("students").find({ name: personFixed, tag: tag }).value()) {
-        msgStr = `${person} nie znajduje się na liście studentów.`;
+    const tag = args[0];
+
+    let msgStr;
+    if (!db.removeStudent(tag)) {
+        msgStr = `${tag} nie znajduje się na liście studentów.`;
     }
     else {
-        db.get("students").remove({ name: personFixed, tag: tag }).write();
-        msgStr = `Osoba ${person} została usunięta z listy studentów.`;
+        msgStr = `Osoba ${tag} została usunięta z listy studentów.`;
     }
 
     msg.reply(msgStr).then((reply) => {
@@ -182,139 +254,186 @@ const replyCheck = (msg, args) => {
         return;
     }
 
-    var person = args[0];
-    var tag = args[1];
-    var personFixed = accents.remove(person.toLowerCase());
+    let msgStr;
+    if (args[0] === "tag") {
+        const tag = args[1];
 
-    var msgStr;
-    if (db.get("students").find({ name: personFixed, tag: tag }).value()) {
-        msgStr = `${person} znajduje się na liście studentów.`
+        if (db.studentExists(tag)) {
+            const student = db.getStudent(tag);
+            msgStr = `${tag} znajduje się na liście studentów jako ${student.name}.`;
+        }
+        else {
+            msgStr = `${tag} nie znajduje się na liście studentów.`;
+        }
+    }
+    else if (args[0] === "imie") {
+        const name = args[1];
+        const student = db.getStudentBySimilarName(name);
+        // no student found
+        if (!student) {
+            msgStr = `${name} nie znajduje się na liście studentów jako ${student.name}.`;
+        }
+        // multiple students with same name found
+        else if (Array.isArray(student)) {
+            msgStr = `${name} znajduje się na liście studentów jako:\n`;
+            student.forEach((s) => {
+                msgStr += `${s.tag} :  ${s.name}.\n`;
+            })
+        }
+        // one student found
+        else {
+            msgStr = `${name} znajduje się na liście studentów jako ${student.tag}`;
+        }
     }
     else {
-        msgStr = `${person} nie znajduje się na liście studentów.`
+        replyWarn(msg, "paramMismatch");
+        return;
     }
 
     msg.reply(msgStr).then((reply) => {
+        msg.delete();
+        reply.delete({ "timeout": 10000 });
+    });
+}
+
+const replyDump = (msg, args) => {
+    if (args.length !== 0) {
+        replyWarn(msg, "paramMismatch");
+        return;
+    }
+    const msgStr = "Lista studentów w załączniku:\n"
+
+    const students = db.dumpAllStudents();
+    const txt = JSON.stringify(students, null, '\t');
+    const bufSize = Buffer.byteLength(txt, 'utf8');
+    const buf = Buffer.alloc(bufSize, 'utf8');
+    buf.write(txt);
+
+    msg.reply(msgStr, {
+        "files": [{
+            attachment: buf,
+            name: 'lista.json'
+        }]
+    }).then(() => {
+        msg.delete();
+    });
+}
+
+const replyInsertAll = (msg, args) => {
+
+    const msgStr = "Uzupełniam listę studentów...\nLogi znajdują się w załączniku:";
+    let log = "";
+    msg.member.guild.members.cache.forEach(member => {
+        let memberTransformed = helpers.transformMember(member);
+        if (roles.isStudent(memberTransformed)) {
+            let name = member.nickname ? member.nickname : member.user.username;
+            log += `Dodaję ${name} : ${member.user.tag} do listy studentów...\n`;
+            if (!db.addStudent(name, member.user.tag)) {
+                let tempStudent = db.getStudent(member.user.tag);
+                if (tempStudent.name === name) {
+                    log += `Użytkownik ${name} : ${member.user.tag} istnieje już na liście.\n`
+                }
+                else {
+                    log += `${member.user.tag} istnieje w bazie jako ${tempStudent.name}!\n`;
+                }
+            }
+        }
+    });
+
+    const bufSize = Buffer.byteLength(log, 'utf8');
+    const buf = Buffer.alloc(bufSize, 'utf8');
+    buf.write(log);
+
+    msg.reply(msgStr, {
+        "files": [{
+            attachment: buf,
+            name: 'log.txt'
+        }]
+    }).then(() => {
+        msg.delete();
+    });
+}
+
+const replyCleanUpList = (msg, args) => {
+    if (args.length !== 0) {
+        replyWarn(msg, "paramMismatch");
+        return;
+    }
+
+    const memberList = msg.member.guild.members.cache.array();
+    const cleanList = db.getCleanStudentList();
+
+    // remove students missing from server
+    const readyList = cleanList.filter((student) => {
+        for (let i = 0; i < memberList.length; i++) {
+            if (student.tag === memberList[i].user.tag && roles.isStudent(memberList[i])) {
+                return true;
+            }
+        }
+        return false;
+    })
+
+    db.replaceStudentList(readyList);
+
+    msg.reply("Lista wyczyszczona z powtórek i nieznalezionych tagów.").then((reply) => {
         msg.delete();
         reply.delete({ "timeout": 5000 });
     });
 }
 
-const replyStatus = (msg, args) => {
+const replyInsertList = (msg, args) => {
     if (args.length !== 0) {
         replyWarn(msg, "paramMismatch");
         return;
     }
+    if (msg.attachments.array().length != 1) {
+        replyWarn(msg, "attachMismatch");
+        return
+    }
 
-    var channelID = msg.member.voice.channelID;
-    var channel = client.channels.cache.get(channelID);
-    var guild = client.guilds.cache.get(msg.member.guild.id);
-
-    var presentStudents = channel.members.filter(member => isStudent(member));
-
-    var totalStudents = guild.members.cache.filter((member) => {
-        var memberTransformed = transformMember(member, guild);
-        return isStudent(memberTransformed);
-    });
-
-    var msgStr = `
-    ${moment().tz('Europe/Warsaw').format('LLL')}
-    Obecność: ${presentStudents.size}/${totalStudents.size} całkowitej ilości studentów na serwerze.
-    `;
-
-    msg.reply(msgStr).then(() => {
-        msg.delete();
-    });
+    const attachment = msg.attachments.array()[0];
+    fetch(attachment.url)
+        .then(res => res.json())
+        .then(out => {
+            db.replaceStudentList(out);
+            msg.reply("Lista studentów została zmieniona.").then((reply) => {
+                msg.delete();
+                reply.delete({ "timeout": 5000 })
+            });
+        })
+        .catch(err => {
+            replyWarn(msg, "attachMismatch");
+        })
 }
 
-const replyRaport = (msg, args) => {
-    if (args.length !== 0) {
+const replyStrictMode = (msg, args) => {
+    if (args.length !== 1) {
         replyWarn(msg, "paramMismatch");
         return;
     }
 
-    var presence = [];
-    var cnt = 1;
+    const state = args[0].toLowerCase();
 
-    var channelID = msg.member.voice.channelID;
-    var channel = client.channels.cache.get(channelID);
-    var guild = client.guilds.cache.get(msg.member.guild.id);
-
-    channel.members.forEach(member => {
-        var memberTransformed = transformMember(member, guild);
-        if (isStudent(memberTransformed)) {
-            if (member.nickname === null || member.nickname === undefined)
-                presence.push({ "id": cnt, "osoba": member.user.username, "tag": member.user.tag });
-            else
-                presence.push({ "id": cnt, "osoba": member.nickname, "tag": member.user.tag });
-            cnt++;
-        }
-    });
-
-
-    var csv = JSONtoCSV(presence);
-
-    var bufSize = Buffer.byteLength(csv, 'utf8');
-    var buf = Buffer.alloc(bufSize, 'utf8');
-    var filename = "Wyklad_" + moment().tz('Europe/Warsaw').format('YYYY_MM_DD_HH_mm_ss') + ".csv";
-
-    buf.write(csv);
-    var msgArr = [`
-    W załączniku znajduje się lista obecności.
-
-    Plik ma formę:
-    Liczba porządkowa, imię i nazwisko, tag Discord
-
-    UWAGA PLIK NALEŻY OTWORZYĆ W NOTATNIKU ZE WZGLĘDU NA TO, ŻE EXCEL NIE KODUJE DOBRZE POLSKICH ZNAKÓW.
-    `, {
-            "files": [{
-                attachment: buf,
-                name: filename
-            }]
-        }];
-
-    msg.reply(msgArr[0], msgArr[1]).then(() => {
-        msg.delete();
-    });
-}
-
-const replyHelp = (msg, args) => {
-    if (args.length !== 0) {
+    if (state === "on") {
+        db.setStrictMode(true);
+        msg.reply("Restrykcje nałożone.").then((reply) => {
+            msg.delete();
+            reply.delete({ "timeout": 5000 });
+        });
+        return;
+    }
+    else if (state === "off") {
+        db.setStrictMode(false);
+        msg.reply("Restrykcje zdjęte.").then((reply) => {
+            msg.delete();
+            reply.delete({ "timeout": 5000 });
+        });
+        return;
+    }
+    else {
         replyWarn(msg, "paramMismatch");
         return;
     }
-
-    var msgStr = "<<Coś poszło nie tak (replyHelp)>>";
-    if (isAdmin(msg.member)) {
-        msgStr = `
-        ${commandPrefix}${helpCommand} - Wyświetla tą wiadomość.
-        ${commandPrefix}${statusCommand} - Wyświetla aktualną obecność na wykładzie, wymaga obecności na kanale głosowym.
-        ${commandPrefix}${raportCommand} - Generuje plik csv z obecnością, wymaga obecności na kanale głosowym.
-        ${commandPrefix}${addStudentCommand} <IMIE NAZWISKO> <TAG DISCORDA> - Dodaje studenta do listy studentów.
-        ${commandPrefix}${removeStudentCommand} <IMIE NAZWISKO> <TAG DISCORDA> - Usuwa studenta z listy studentów.
-        ${commandPrefix}${checkStudentCommand} <IMIE NAZWISKO> <TAG DISCORDA> - Sprawdza, czy student znajduje się na liście studentów.
-        ${commandPrefix}${strictModeCommand} on|off - Włącza lub wyłącza tryb restrykcyjny.
-        ${commandPrefix}${infoCommand} - Wyświetla informacje o tym bocie.
-    
-        Ta wiadomość zniknie za 20 sekund...
-        `;
-    }
-    else if (isPresenter(msg.member)) {
-        msgStr = `
-        ${commandPrefix}${helpCommand} - Wyświetla tą wiadomość.
-        ${commandPrefix}${statusCommand} - Wyświetla aktualną obecność na wykładzie, wymaga obecności na kanale głosowym.
-        ${commandPrefix}${raportCommand} - Generuje plik csv z obecnością, wymaga obecności na kanale głosowym.
-        ${commandPrefix}${infoCommand} - Wyświetla informacje o tym bocie.
-    
-        Ta wiadomość zniknie za 20 sekund...
-        `;
-    }
-
-
-    msg.reply(msgStr).then((reply) => {
-        msg.delete();
-        reply.delete({ "timeout": 20000 });
-    });
 }
 
 const replyWarn = (msg, type: String) => {
@@ -326,14 +445,14 @@ const replyWarn = (msg, type: String) => {
             });
             break;
         case "paramMismatch":
-            msg.reply(`Nieprawidłowa ilość argumentów.\nUżyj ${commandPrefix}${helpCommand} po więcej informacji.`)
+            msg.reply(`Nieprawidłowa ilość argumentów lub zły typ argumentu.\nUżyj ${commands.commandPrefix}${commands.helpCommand} po więcej informacji.`)
                 .then((reply) => {
                     msg.delete();
                     reply.delete({ "timeout": 5000 });
                 });
             break;
-        case "studentsDBProblem":
-            msg.reply(`Coś jest nie tak z bazą studentów.`)
+        case "attachMismatch":
+            msg.reply(`Nieprawidłowa ilość załączników lub zły typ załącznika.\nUżyj ${commands.commandPrefix}${commands.helpCommand} po więcej informacji.`)
                 .then((reply) => {
                     msg.delete();
                     reply.delete({ "timeout": 5000 });
@@ -348,135 +467,81 @@ const replyWarn = (msg, type: String) => {
     }
 }
 
-const replyInfo = (msg, args) => {
-
-    if (args.length !== 0) {
-        replyWarn(msg, "paramMismatch");
-        return;
-    }
-
-    var msgStr = `
-Bot stworzony w celu sprawdzania obecności na zajęciach online na pierwszym semestrze studiow magisterskich na Wydziale Elektrotechniki i Automatyki Politechniki Gdańskiej.
-https://github.com/Tai-Min/Discord-Obecnosciobot
-
-The MIT License
-
-Copyright (c) 2020 Mateusz Pająk
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-    `;
-
-    msg.reply(msgStr).then((reply) => {
-        msg.delete();
-        reply.delete({ "timeout": 35000 });
-    });
-}
-
-const replyStrictMode = (msg, args) =>{
-    if (args.length !== 1) {
-        replyWarn(msg, "paramMismatch");
-        return;
-    }
-
-    var state = args[0].toLowerCase();
-    console.log(state)
-    if(state === "on"){
-        setStrictMode(true);
-        msg.reply("Restrykcje nałożone.").then((reply) => {
-            msg.delete();
-            reply.delete({ "timeout": 5000 });
-        });
-        return;
-    }
-    else if(state === "off"){
-        setStrictMode(false);
-        msg.reply("Restrykcje zdjęte.").then((reply) => {
-            msg.delete();
-            reply.delete({ "timeout": 5000 });
-        });
-        return;
-    }
-    else{
-        replyWarn(msg, "paramMismatch");
-        return;
-    }
-}
-
-const splitArgs = (argStr) => {
-    var aStr = argStr.match(/\w+|"[^"]+"/g), i = aStr.length;
-    while (i--) {
-        aStr[i] = aStr[i].replace(/"/g, "");
-    }
-    return aStr;
-}
-
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
 });
 
 client.on('message', msg => {
 
-    if (!hasPrefix(msg.content)) {
+    if (!commands.hasPrefix(msg.content)) {
         return;
     }
 
-    var commandString = removePrefix(msg.content);
-    var args = splitArgs(commandString);
-    var commandName = args[0];//get command name
-    args.splice(0, 1);//get other args
+    const commandString = commands.removePrefix(msg.content);
+    const args = helpers.splitArgs(commandString); //sprlit string into array of arguments
+    const commandName = args[0]; // get command name
+    args.splice(0, 1); // get other args
 
-    //user tried to use manage command but is not allowed to
-    if (isAdminCommand(commandName) && !isAdmin(msg.member)) {
+    //user tried to use admin's command but is not allowed to
+    if (commands.isAdminCommand(commandName) && !roles.isAdmin(msg.member)) {
         msg.delete();
         return;
     }
-    //user tried to use general command but is not allowed to
-    else if (isPresenterCommand(commandName) && !isPresenter(msg.member) && !isAdmin(msg.member)) {
+    //user tried to use presenter's command but is not allowed to
+    else if (commands.isPresenterCommand(commandName) && !roles.isPresenter(msg.member) && !roles.isAdmin(msg.member)) {
         msg.delete();
         return;
     }
-    //not a valid command, maybe for other bots
-    else if (!isCommand(commandName)) {
+    //not a valid command, maybe for other bots so ignore it
+    else if (!commands.isCommand(commandName)) {
         return;
     }
 
     //chech whether user tries to use command that requires presence in voice channel
     //i.e to check presence status
-    var channelID = msg.member.voice.channelID;
-    if ((channelID === null || channelID === undefined) && requiresVoiceChannel(commandName)) {
+    const channelID = msg.member.voice.channelID;
+    if (!channelID && commands.requiresVoiceChannel(commandName)) {
         replyWarn(msg, "voiceChanReq");
         return;
     }
 
-    //user is allowed to use given command so perform it
+    //user is allowed to use command so perform it
     switch (commandName) {
-        case raportCommand:
+        case commands.raportCommand:
             replyRaport(msg, args);
             break;
-        case statusCommand:
+        case commands.statusCommand:
             replyStatus(msg, args);
             break;
-        case helpCommand:
+        case commands.helpCommand:
             replyHelp(msg, args);
             break;
-        case infoCommand:
+        case commands.infoCommand:
             replyInfo(msg, args);
             break;
-        case addStudentCommand:
+        case commands.addStudentCommand:
             replyAdd(msg, args);
             break;
-        case removeStudentCommand:
+        case commands.removeStudentCommand:
             replyRemove(msg, args);
             break;
-        case checkStudentCommand:
+        case commands.checkStudentCommand:
             replyCheck(msg, args);
             break;
-            case strictModeCommand:
+        case commands.strictModeCommand:
             replyStrictMode(msg, args);
+            break;
+        case commands.dumpCommand:
+            replyDump(msg, args);
+            break;
+        case commands.insertAllCommand:
+            replyInsertAll(msg, args);
+            break;
+        case commands.cleanUpListCommand:
+            replyCleanUpList(msg, args);
+            break;
+        case commands.insertListCommand:
+            replyInsertList(msg, args);
             break
         default:
             msg.reply(`<<Coś poszło nie tak: ${commandName}>>`);
@@ -484,85 +549,63 @@ client.on('message', msg => {
     }
 });
 
-const studentExists = (name, tag) => {
-    if (!db.get("students").find({ tag: tag }).value())
-        return false;
-    return true;
-}
 
-const presenterExists = (name, tag) => {
-    if (!db.get("presenters").find({ tag: tag }).value())
-        return false;
-    return true;
-}
-
-const addPresenter = (name, tag) => {
-    db.get("presenters").push({ name: name, tag: tag }).write();
-}
-
-const isStrictMode = () =>{
-    if (!db.get("strict_mode").value()){
-        return false
-    };
-    return true;
-}
-
-const setStrictMode = (value) =>{
-    db.set("strict_mode", value).write();
-}
 
 client.on('voiceStateUpdate', (oldMember, newMember) => {
 
-    let newUserChannel = newMember.channelID
-    let oldUserChannel = oldMember.channelID
+    const newUserChannel = newMember.channelID // currently joined channel
+    const oldUserChannel = oldMember.channelID // previous channel
 
-
-
+    // user Joins a voice channel
     if (!oldUserChannel && newUserChannel) {
-        // User Joins a voice channel
-        var guild = newMember.guild;
-        var member = guild.members.cache.get(newMember.id)
-        var name = member.user.username;
-        var tag = member.user.username + "#" + member.user.discriminator;
 
-        if (member.nickname) {
-            name = member.nickname;
-        }
-        var memberTransformed = transformMember(member, guild);
+        const guild = newMember.guild;
+        const member = guild.members.cache.get(newMember.id)
+        const tag = member.user.username + "#" + member.user.discriminator;
+        const name = member.nickname ? member.nickname : member.user.username;
+        const memberTransformed = helpers.transformMember(member); // for roles.isX() functions
 
-        if (isPresenter(memberTransformed) && !presenterExists(name, tag)) {
-            addPresenter(name, tag);
-
-            member.send(`
-            Szanowny ${name}.
+        // presenter joins a voice channel for the first time
+        if (roles.isPresenter(memberTransformed) && !db.presenterExists(tag)) {
+            db.addPresenter(name, tag);
+            member.send(
+                `Szanowny Panie.
 
 Miło mi powitać Pana na serwerze ${guild.name}.
 Jestem automatem umożliwiającym kontrolę obecności słuchaczy podczas zajęć prowadzonych na platformie Discord.
-Aby dokonać sprawdzenia obecności należy na dostępnym kanale tekstowym (np. #wykład) wpisać komendę "${commandPrefix}${raportCommand}".
-Dodatkowo, serwer umożliwia sprawdzenie aktualnej frekwencji przy pomocy komendy "${commandPrefix}${statusCommand}".
-W celu uzyskania pomocy dostępna jest komenda "${commandPrefix}${helpCommand}".
-Informacje o automacie dostępne są pod komendą "${commandPrefix}${infoCommand}".
+Aby dokonać sprawdzenia obecności należy na dostępnym kanale tekstowym (np. #wykład) wpisać komendę "${commands.commandPrefix}${commands.raportCommand}".
+Dodatkowo, serwer umożliwia sprawdzenie aktualnej frekwencji przy pomocy komendy "${commands.commandPrefix}${commands.statusCommand}".
+W celu uzyskania pomocy dostępna jest komenda "${commands.commandPrefix}${commands.helpCommand}".
+Informacje o automacie dostępne są pod komendą "${commands.commandPrefix}${commands.infoCommand}".
 W przypadku pytań proszę kierować się do administratorów serwera.
 
 Z wyrazami szacunku,
-${client.user.username}
-            `);
+${client.user.username}`
+            );
         }
-        else if(isStudent(memberTransformed) /*&& !isAdmin(memberTransformed)*/ && !studentExists(name, tag) && isStrictMode()){
-            member.send(`
-            Ups...
+        // not registered student tries to join a voice channel with strict mode enabled
+        else if (roles.isStudent(memberTransformed) && !roles.isAdmin(memberTransformed) && !db.studentExists(tag) && db.isStrictMode()) {
+            member.send(
+                `Ups...
 
-Wygląda na to, że nie jesteś wpisany na listę studentów.
-W przypadku pomyłki skontaktuj się z administracją.
-            `, {"files":["./user_kicked.png"]})
+Serwer jest obecnie w trybie restrykcyjnym i wygląda na to, że nie jesteś wpisany na listę studentów.
+Ze względu na to, usunęłam twoją rangę studenta.
+W przypadku pomyłki skontaktuj się z administracją.`
+                , { "files": ["./user_kicked.png"] })
             newMember.kick("Nie na liście studentów.");
-            member.roles.remove(member.roles.cache);
+            member.roles.remove(member.roles.cache); // degrade user to lowest range
         }
+        else if (roles.isStudent(memberTransformed) && roles.isAdmin(memberTransformed) && !db.studentExists(tag) && db.isStrictMode()) {
+            member.send(
+                `Ups...
 
-
-
-    } else if (!newUserChannel) {
-        // User leaves a voice channel
+Serwer jest obecnie w trybie restrykcyjnym i wygląda na to, że nie jesteś wpisany na listę studentów.
+Twoja obecność nie zostanie uwzględniona w pliku obecności.
+Ze względu na posiadaną przez Ciebie rangę, nie mam możliwości zdjęcia ci rangi studenta.
+Przed dołączeniem do wykładu zalecam dodać siebie do listy studentów za pomocą komendy ${commands.commandPrefix}${commands.addStudentCommand} "<IMIE NAZWISKO>" "<TAG DISCORDA>".
+`
+                , { "files": ["./user_kicked.png"] })
+        }
     }
 })
 

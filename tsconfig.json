@@ -3,6 +3,13 @@
     "typeRoots":["./node_modules/@types"],
     "strict":true,
     "files": [
-        "bot.ts"
-    ]
+        "bot.ts",
+        "commands.ts",
+        "roles.ts",
+        "db.ts",
+        "helpers.ts"
+    ],
+    "compilerOptions": {
+        "types": ["node"]
+      }
 }
