@@ -73,9 +73,6 @@ Gdzie CLIENT_ID to umieszczone jest na https://discordapp.com/developers w zakł
 
 Żeby bot poprawnie działał, w pożądanych kanałach tekstowych musi mieć ustawione uprawnie czytania/wysyłania/usuwania wiadomości oraz załączanie plików i linków.
 
-#### Opis ustawień pliku config.json:
-
-
 
 
 
