@@ -8,7 +8,7 @@
     "statusCommand":"status",
     "helpCommand":"help",
     "infoCommand":"info",
-    "raportCommand":"rapirt",
+    "raportCommand":"raport",
     "addStudentCommand":"add",
     "removeStudentCommand":"remove",
     "checkStudentCommand":"check",
