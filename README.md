@@ -19,7 +19,7 @@ yarn start
 ## Zaproszenie na serwer
 
 Bota można zaprosić na serwer używając linku: <br/>
-https://<span></span>discordapp.<span></span>com/oauth2/authorize?client_id=<CLIENT_ID>scope=bot&permissions=59392 <br/><br/>
+https://<span></span>discordapp.<span></span>com/oauth2/authorize?client_id=<CLIENT_ID>scope=bot&permissions=268494864<br/><br/>
 
 Gdzie CLIENT_ID to umieszczone jest na https://discordapp.com/developers w zakładce General Information.
 
