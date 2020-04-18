@@ -148,7 +148,7 @@ Użytkownik dodany do listy obecnosci na podstawie pseudonimu lub nazwy użytkow
     errLog += "\n";
 
     //create csv file
-    const filename = "Wyklad_" + moment().tz(config["timezone"]).format('YYYY_MM_DD_HH_mm_ss') + ".csv";
+    const filename = "Zajecia_" + moment().tz(config["timezone"]).format('YYYY_MM_DD_HH_mm_ss') + ".csv";
     const csv = helpers.JSONtoCSV(presence);
     const bufSize = Buffer.byteLength(csv, 'utf8');
     const buf = Buffer.alloc(bufSize, 'utf8');
@@ -565,8 +565,6 @@ client.on('message', msg => {
     }
 });
 
-
-
 client.on('voiceStateUpdate', (oldMember, newMember) => {
 
     const newUserChannel = newMember.channelID // currently joined channel
@@ -588,8 +586,8 @@ client.on('voiceStateUpdate', (oldMember, newMember) => {
                 `Szanowny Panie.
 
 Miło mi powitać Pana na serwerze ${guild.name}.
-Jestem automatem umożliwiającym kontrolę uczestnictwa podczas zajęć prowadzonych na platformie Discord.
-Aby dokonać sprawdzenia obecności należy na dostępnym kanale tekstowym (np. #wykład) wpisać komendę "${commands.commandPrefix}${commands.raportCommand}".
+Jestem automatem umożliwiającym kontrolę uczestnictwa na zajęciach prowadzonych na platformie Discord.
+Aby dokonać sprawdzenia uczestnictwa należy na dostępnym kanale tekstowym (np. #wykład) wpisać komendę "${commands.commandPrefix}${commands.raportCommand}".
 Dodatkowo, serwer umożliwia sprawdzenie aktualnej frekwencji przy pomocy komendy "${commands.commandPrefix}${commands.statusCommand}".
 W celu uzyskania pomocy dostępna jest komenda "${commands.commandPrefix}${commands.helpCommand}".
 Informacje o automacie dostępne są pod komendą "${commands.commandPrefix}${commands.infoCommand}".
@@ -605,8 +603,12 @@ ${client.user.username}`
                 `Ups...
 
 Serwer jest obecnie w trybie restrykcyjnym i wygląda na to, że nie jesteś wpisany na listę studentów.
-Ze względu na to, usunęłam twoją rangę studenta.
-W przypadku pomyłki skontaktuj się z administracją.`
+Ze względu na to, twoja ranga studenta została zdjęta.
+
+Powód:
+Prawdopodobnie nie podałeś swojego nazwiska, przez co nie ma możliwości wpisania Ciebie na listę obecności, bądź istnieje więcej niż jedna osoba o takich samych danych.
+
+W celu rozwiązania sprawy skontaktuj się z administracją serwera.`
                 , { "files": ["./user_kicked.png"] })
             newMember.kick("Nie na liście studentów.");
             member.roles.remove(member.roles.cache); // degrade user to lowest range
@@ -615,11 +617,8 @@ W przypadku pomyłki skontaktuj się z administracją.`
             member.send(
                 `Ups...
 
-Serwer jest obecnie w trybie restrykcyjnym i wygląda na to, że nie jesteś wpisany na listę studentów.
-Twoja obecność nie zostanie uwzględniona w pliku obecności.
-Ze względu na posiadaną przez Ciebie rangę, nie mam możliwości zdjęcia ci rangi studenta.
-Przed dołączeniem do wykładu zalecam dodać siebie do listy studentów za pomocą komendy ${commands.commandPrefix}${commands.addStudentCommand} "<IMIE NAZWISKO>" "<TAG DISCORDA>".
-`
+Serwer jest obecnie w trybie restrykcyjnym i wygląda na to, że nie jesteś wpisany na listę studentów. Twoja obecność nie zostanie uwzględniona w pliku obecności.
+Ze względu na posiadaną przez Ciebie rangę, nie mam możliwości zdjęcia ci rangi studenta, jednak zalecam dodać siebie do listy studentów za pomocą komendy ${commands.commandPrefix}${commands.addStudentCommand} "<IMIE NAZWISKO>" "<TAG DISCORDA>".`
                 , { "files": ["./user_kicked.png"] })
         }
     }
