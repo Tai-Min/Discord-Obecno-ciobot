@@ -407,11 +407,27 @@ const replyInsertList = (msg, args) => {
 }
 
 const replyStrictMode = (msg, args) => {
-    if (args.length !== 1) {
+    if (args.length > 1) {
         replyWarn(msg, "paramMismatch");
         return;
     }
 
+    if(args.length === 0){
+        if(db.isStrictMode){
+            msg.reply("Restrykcje są nałożone.").then((reply) => {
+                msg.delete();
+                reply.delete({ "timeout": 5000 });
+            });
+            return;
+        }
+        else{
+            msg.reply("Restrykcje nie sąnałożone.").then((reply) => {
+                msg.delete();
+                reply.delete({ "timeout": 5000 });
+            });
+            return;
+        }
+    }
     const state = args[0].toLowerCase();
 
     if (state === "on") {
@@ -572,7 +588,7 @@ client.on('voiceStateUpdate', (oldMember, newMember) => {
                 `Szanowny Panie.
 
 Miło mi powitać Pana na serwerze ${guild.name}.
-Jestem automatem umożliwiającym kontrolę obecności słuchaczy podczas zajęć prowadzonych na platformie Discord.
+Jestem automatem umożliwiającym kontrolę uczestnictwa podczas zajęć prowadzonych na platformie Discord.
 Aby dokonać sprawdzenia obecności należy na dostępnym kanale tekstowym (np. #wykład) wpisać komendę "${commands.commandPrefix}${commands.raportCommand}".
 Dodatkowo, serwer umożliwia sprawdzenie aktualnej frekwencji przy pomocy komendy "${commands.commandPrefix}${commands.statusCommand}".
 W celu uzyskania pomocy dostępna jest komenda "${commands.commandPrefix}${commands.helpCommand}".
