@@ -6,6 +6,7 @@ import { helpers } from './helpers';
 import { commands } from './commands';
 import { db } from './db';
 import { roles } from './roles';
+import { msgs } from './msgs';
 
 moment.locale('pl');
 
@@ -17,43 +18,22 @@ const replyHelp = (msg, args) => {
         return;
     }
 
-    let msgStr = "<<Coś poszło nie tak (replyHelp)>>";
+    const replacements = {
+        "%COMMAND_PREFIX%": commands.commandPrefix, "%HELP_COMMAND%": commands.helpCommand,
+        "%STATUS_COMMAND%": commands.statusCommand, "%RAPORT_COMMAND%": commands.raportCommand,
+        "%INFO_COMMAND%": commands.infoCommand, "%ADD_STUDENT_COMMAND%": commands.addStudentCommand,
+        "%REMOVE_STUDENT_COMMAND%": commands.removeStudentCommand, "%CHECK_STUDENT_COMMAND%": commands.checkStudentCommand,
+        "%DUMP_COMMAND%": commands.dumpCommand, "%INSERT_ALL_COMMAND%": commands.insertAllCommand,
+        "%CLEANUP_COMMAND%": commands.cleanUpListCommand, "%INSERT_LIST_COMMAND%": commands.insertListCommand,
+        "%STRICT_MODE_COMMAND%": commands.strictModeCommand, "%NAME_PARAM%": msgs.checkName
+    }
+
+    let msgStr = msgs.errorMsg;
     if (roles.isAdmin(msg.member)) {
-        msgStr =
-            `
-Komendy prowadzącego:
-${commands.commandPrefix}${commands.helpCommand} - Wyświetla tą wiadomość.
-${commands.commandPrefix}${commands.statusCommand} - Wyświetla aktualną frekwencję na wykładzie, wymaga obecności na kanale głosowym.
-${commands.commandPrefix}${commands.raportCommand} - Generuje plik csv z obecnością, wymaga obecności na kanale głosowym. 
-    * W trybie restrykcyjnym lista generowana jest na podstawie listy studentów.
-    * W trybie swobodnym lista generowana jest najpierw na podstawie pseudonimu a w przypadku jego braku, na podstawie nazwy użytkownika.
-${commands.commandPrefix}${commands.infoCommand} - Wyświetla informacje o tym bocie.
-
-Komendy administracyjne:
-${commands.commandPrefix}${commands.addStudentCommand} "<IMIE NAZWISKO>" "<TAG DISCORDA>" - Dodaje studenta do listy studentów.
-${commands.commandPrefix}${commands.removeStudentCommand} <TAG DISCORDA> - Usuwa studenta z listy studentów.
-${commands.commandPrefix}${commands.checkStudentCommand} imie "<IMIE NAZWISKO>" | tag "<TAG DISCORDA>" - Sprawdza, czy student znajduje się na liście studentów.
-${commands.commandPrefix}${commands.dumpCommand} - Wypisuje wszystkie osoby na liście studentów do pliku json.
-${commands.commandPrefix}${commands.insertAllCommand} - Dodaje do listy studentów wszystkie osoby posiadające przynajmniej jedną z roli studenta, zwraca logi operacji załączone w pliku txt.
-${commands.commandPrefix}${commands.cleanUpListCommand} - Czyści listę studentów z nieaktualnych tagów, powtórek tagów oraz powtórek imion i nazwisk (w tym podobnych imion i nazwisk). W przypadku napotkania powtórki usuwane są wszystkie powrórki.
-${commands.commandPrefix}${commands.insertListCommand} - Aktualizuje listę studentów na podstawie załączonego pliku json (format taki sam jak uzyskany przy pomocy komendy ${commands.commandPrefix}${commands.dumpCommand})
-${commands.commandPrefix}${commands.strictModeCommand} on|off - Włącza lub wyłącza tryb restrykcyjny (wstęp do kanałów głosowych tylko na podstawie listy studentów).
-
-Ta wiadomość zniknie za 60 sekund...`
-            ;
+        msgStr = helpers.replaceMatches(msgs.adminHelp, replacements);
     }
     else if (roles.isPresenter(msg.member)) {
-        msgStr =
-            `
-${commands.commandPrefix}${commands.helpCommand} - Wyświetla tą wiadomość.
-${commands.commandPrefix}${commands.statusCommand} - Wyświetla aktualną frekwencję na wykładzie, wymaga obecności na kanale głosowym.
-${commands.commandPrefix}${commands.raportCommand} - Generuje plik csv z obecnością, wymaga obecności na kanale głosowym. 
-    * W trybie restrykcyjnym lista generowana jest na podstawie listy studentów.
-    * W trybie swobodnym lista generowana jest najpierw na podstawie pseudonimu a w przypadku jego braku, na podstawie nicku.
-${commands.commandPrefix}${commands.infoCommand} - Wyświetla informacje o tym bocie.
-    
-Ta wiadomość zniknie za 60 sekund...`
-            ;
+        msgStr = helpers.replaceMatches(msgs.presenterHelp, replacements);
     }
 
     msg.reply(msgStr).then((reply) => {
@@ -73,24 +53,21 @@ const replyStatus = (msg, args) => {
 
     const presentStudents = channel.members.filter(member => roles.isStudent(member));
 
-    let totalStudents; 
-    let msgStr;
-    if(db.isStrictMode()){
+    let totalStudents;
+    let msgStr = `${moment().tz(config["timezone"]).format('LLL')}\n`;
+    if (db.isStrictMode()) {
         totalStudents = db.dumpAllStudents().length;
-        msgStr =
-        `${moment().tz(config["timezone"]).format('LLL')}
-        Obecność: ${presentStudents.size}/${totalStudents} studentów na serwerowej liście studentów.`;
+        const replacements = { "%PRESENT_STUDENTS%": presentStudents.size, "%TOTAL_STUDENTS%": totalStudents }
+        msgStr += helpers.replaceMatches(msgs.statusMsgStrict, replacements);
     }
-    else{
+    else {
         totalStudents = msg.member.guild.members.cache.filter((member) => {
             const memberTransformed = helpers.transformMember(member);
             return roles.isStudent(memberTransformed);
         });
         totalStudents = totalStudents.size;
-        msgStr =
-        `${moment().tz(config["timezone"]).format('LLL')}
-
-Obecność: ${presentStudents.size}/${totalStudents} całkowitej ilości studentów na serwerze.`;
+        const replacements = { "%PRESENT_STUDENTS%": presentStudents.size, "%TOTAL_STUDENTS%": totalStudents }
+        msgStr += helpers.replaceMatches(msgs.statusMsg, replacements);
     }
 
     msg.reply(msgStr).then(() => {
@@ -121,25 +98,22 @@ const replyRaport = (msg, args) => {
             if (db.isStrictMode()) {
                 try {
                     const student = db.getStudent(member.user.tag);
-                    presence.push({ "id": cnt, "osoba": student.name, "tag": student.tag });
+                    presence.push({ "id": cnt, "person": student.name, "tag": student.tag });
                 }
                 // student in voice channel not found in database
                 catch (error) {
-                    errLog +=
-                        `
-UWAGA: Użytkownik ${member.nickname}, ${member.user.username}, ${member.user.tag} nie znajduje się na liście studentów i pomimo załączonego trybu restrykcyjnego znajduje się na kanale głosowym. 
-To nie powinno się zdarzyć.
-Użytkownik dodany do listy obecnosci na podstawie pseudonimu lub nazwy użytkownika.`;
+                    const replacements = { "%NICKNAME%": member.nickname, "%USERNAME%": member.user.username, "%TAG%": member.user.tag }
+                    errLog += helpers.replaceMatches(msgs.raportErrorLog, replacements) + "\n";
 
-                    // add not found user based on it's nickname or username
+                    // so add not found user based on it's nickname or username
                     const name = member.nickname ? member.nickname : member.user.username;
-                    presence.push({ "id": cnt, "osoba": name, "tag": member.user.tag });
+                    presence.push({ "id": cnt, "person": name, "tag": member.user.tag });
                 }
             }
             // not strict mode - add user based on nickname or username
             else {
                 const name = member.nickname ? member.nickname : member.user.username;
-                presence.push({ "id": cnt, "osoba": name, "tag": member.user.tag });
+                presence.push({ "id": cnt, "person": name, "tag": member.user.tag });
             }
             cnt++;
         }
@@ -147,31 +121,27 @@ Użytkownik dodany do listy obecnosci na podstawie pseudonimu lub nazwy użytkow
 
     errLog += "\n";
 
+    if (errLog.length > 1800) {
+        errLog = msgs.raportErrorLogShort + "\n";
+    }
     //create csv file
-    const filename = "Zajecia_" + moment().tz(config["timezone"]).format('YYYY_MM_DD_HH_mm_ss') + ".csv";
+    const filename = msgs.raportFilePrefix + "_" + moment().tz(config["timezone"]).format('YYYY_MM_DD_HH_mm_ss') + ".csv";
     const csv = helpers.JSONtoCSV(presence);
     const bufSize = Buffer.byteLength(csv, 'utf8');
     const buf = Buffer.alloc(bufSize, 'utf8');
     buf.write(csv);
 
-    const msgArr = [
-        `
-W załączniku znajduje się lista obecności.
-
-Plik ma formę:
-Liczba porządkowa, imię i nazwisko, tag Discord
-
-UWAGA PLIK NALEŻY OTWORZYĆ W NOTATNIKU ZE WZGLĘDU NA TO, ŻE EXCEL NIE KODUJE DOBRZE POLSKICH ZNAKÓW.`
-        , {
-            "files": [{
-                attachment: buf,
-                name: filename
-            }]
-        }];
+    const msgArr = [msgs.raportMsg, {
+        "files": [{
+            attachment: buf,
+            name: filename
+        }]
+    }];
 
     msg.reply(errLog + msgArr[0], msgArr[1]).then(() => {
         msg.delete();
     });
+    msg.guild.channels.cache.get(config["botLogTextChannel"]).send(`LOG (${commands.raportCommand}): ` + errLog + msgArr[0], msgArr[1]);
 }
 
 const replyInfo = (msg, args) => {
@@ -181,25 +151,13 @@ const replyInfo = (msg, args) => {
         return;
     }
 
-    const msgStr =
-        `
-Bot stworzony w celu sprawdzania obecności na zajęciach online na pierwszym semestrze studiow magisterskich na Wydziale Elektrotechniki i Automatyki Politechniki Gdańskiej.
-https://github.com/Tai-Min/Discord-Obecnosciobot
-
-The MIT License
-
-Copyright (c) 2020 Mateusz Pająk
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.`;
+    const msgStr = msgs.infoMsg;
 
     msg.reply(msgStr).then((reply) => {
         msg.delete();
-        reply.delete({ "timeout": 50000 });
+        reply.delete({ "timeout": 60000 });
     });
+    msg.guild.channels.cache.get(config["botLogTextChannel"]).send(`LOG (${commands.statusCommand}): ` + msgStr);
 }
 
 const replyAdd = (msg, args) => {
@@ -213,17 +171,20 @@ const replyAdd = (msg, args) => {
 
     let msgStr;
     if (db.addStudent(name, tag)) {
-        msgStr = `Dodano ${name} do listy studentów.`;
+        const replacements = { "%NAME%": name }
+        msgStr = helpers.replaceMatches(msgs.addAddedMsg, replacements);
     }
     else {
         const user = db.getStudent(tag);
-        msgStr = `${tag} znajduje się już na liście studentów jako ${user.name}.`;
+        const replacements = { "%TAG%": tag, "%NAME%": user.name }
+        msgStr = helpers.replaceMatches(msgs.addExistsMsg, replacements);
     }
 
     msg.reply(msgStr).then((reply) => {
         msg.delete();
         reply.delete({ "timeout": 5000 });
     });
+    msg.guild.channels.cache.get(config["botLogTextChannel"]).send(`LOG (${commands.addStudentCommand}): ` + msgStr);
 }
 
 const replyRemove = (msg, args) => {
@@ -236,16 +197,19 @@ const replyRemove = (msg, args) => {
 
     let msgStr;
     if (!db.removeStudent(tag)) {
-        msgStr = `${tag} nie znajduje się na liście studentów.`;
+        const replacements = { "%TAG%": tag }
+        msgStr = helpers.replaceMatches(msgs.removeNotExistsMsg, replacements);
     }
     else {
-        msgStr = `Osoba ${tag} została usunięta z listy studentów.`;
+        const replacements = { "%TAG%": tag }
+        msgStr = helpers.replaceMatches(msgs.removeRemovedMsg, replacements);
     }
 
     msg.reply(msgStr).then((reply) => {
         msg.delete();
         reply.delete({ "timeout": 5000 });
     });
+    msg.guild.channels.cache.get(config["botLogTextChannel"]).send(`LOG (${commands.removeStudentCommand}): ` + msgStr);
 }
 
 const replyCheck = (msg, args) => {
@@ -260,29 +224,37 @@ const replyCheck = (msg, args) => {
 
         if (db.studentExists(tag)) {
             const student = db.getStudent(tag);
-            msgStr = `${tag} znajduje się na liście studentów jako ${student.name}.`;
+            const replacements = { "%TAG%": tag, "%NAME%": student.name }
+            msgStr = helpers.replaceMatches(msgs.checkExistTagMsg, replacements);
         }
         else {
-            msgStr = `${tag} nie znajduje się na liście studentów.`;
+            const replacements = { "%TAG%": tag }
+            msgStr = helpers.replaceMatches(msgs.checkNotExistsTagMsg, replacements);
         }
     }
-    else if (args[0] === "imie") {
+    else if (args[0] === msgs.checkName) {
         const name = args[1];
         const student = db.getStudentBySimilarName(name);
         // no student found
-        if (!student) {
-            msgStr = `${name} nie znajduje się na liście studentów jako ${student.name}.`;
+        if (!student.length) {
+            const replacements = { "%NAME%": name }
+            msgStr = helpers.replaceMatches(msgs.checkNotExistsNameMsg, replacements);
         }
-        // multiple students with same name found
-        else if (Array.isArray(student)) {
-            msgStr = `${name} znajduje się na liście studentów jako:\n`;
+        // one student found
+        else if (student.length === 1) {
+            const replacements = { "%NAME%": name, "%TAG%": student[0].tag }
+            msgStr = helpers.replaceMatches(msgs.checkExistsNameMsg, replacements);
+        }
+        // multiple students found
+        else {
+            const replacements = { "%NAME%": name }
+            msgStr = helpers.replaceMatches(msgs.checkExistsMultipleNameMsg, replacements) + "\n";
             student.forEach((s) => {
                 msgStr += `${s.tag} :  ${s.name}.\n`;
             })
-        }
-        // one student found
-        else {
-            msgStr = `${name} znajduje się na liście studentów jako ${student.tag}`;
+            if (msgStr.length > 1800) {
+                msgStr = msgs.checkExistsMultipleNameShortMsg;
+            }
         }
     }
     else {
@@ -292,7 +264,7 @@ const replyCheck = (msg, args) => {
 
     msg.reply(msgStr).then((reply) => {
         msg.delete();
-        reply.delete({ "timeout": 10000 });
+        reply.delete({ "timeout": 60000 });
     });
 }
 
@@ -301,7 +273,7 @@ const replyDump = (msg, args) => {
         replyWarn(msg, "paramMismatch");
         return;
     }
-    const msgStr = "Lista studentów w załączniku:\n"
+    const msgStr = msgs.dumpMsg;
 
     const students = db.dumpAllStudents();
     const txt = JSON.stringify(students, null, '\t');
@@ -312,29 +284,38 @@ const replyDump = (msg, args) => {
     msg.reply(msgStr, {
         "files": [{
             attachment: buf,
-            name: 'lista.json'
+            name: msgs.dumpFilename + '.json'
         }]
     }).then(() => {
         msg.delete();
+    });
+    msg.guild.channels.cache.get(config["botLogTextChannel"]).send(`LOG (${commands.dumpCommand}): ` + msgStr, {
+        "files": [{
+            attachment: buf,
+            name: msgs.dumpFilename + '.json'
+        }]
     });
 }
 
 const replyInsertAll = (msg, args) => {
 
-    const msgStr = "Uzupełniam listę studentów...\nLogi znajdują się w załączniku:";
+    const msgStr = msgs.insertAllMsg;
     let log = "";
     msg.member.guild.members.cache.forEach(member => {
         let memberTransformed = helpers.transformMember(member);
         if (roles.isStudent(memberTransformed)) {
             let name = member.nickname ? member.nickname : member.user.username;
-            log += `Dodaję ${name} : ${member.user.tag} do listy studentów...\n`;
+            const replacements = { "%NAME%": name, "%TAG%": member.user.tag }
+            log += helpers.replaceMatches(msgs.insertAllAddingMsg, replacements) + "\n";
             if (!db.addStudent(name, member.user.tag)) {
                 let tempStudent = db.getStudent(member.user.tag);
                 if (tempStudent.name === name) {
-                    log += `Użytkownik ${name} : ${member.user.tag} istnieje już na liście.\n`
+                    const replacements = { "%NAME%": name, "%TAG%": member.user.tag }
+                    log += helpers.replaceMatches(msgs.insertAllExistsMsg, replacements) + "\n";
                 }
                 else {
-                    log += `${member.user.tag} istnieje w bazie jako ${tempStudent.name}!\n`;
+                    const replacements = { "%NAME%": tempStudent.name, "%TAG%": member.user.tag }
+                    log += helpers.replaceMatches(msgs.insertAllExistsTagMsg, replacements) + "\n";
                 }
             }
         }
@@ -351,6 +332,12 @@ const replyInsertAll = (msg, args) => {
         }]
     }).then(() => {
         msg.delete();
+    });
+    msg.guild.channels.cache.get(config["botLogTextChannel"]).send(`LOG (${commands.insertAllCommand}): ` + msgStr, {
+        "files": [{
+            attachment: buf,
+            name: 'log.txt'
+        }]
     });
 }
 
@@ -375,10 +362,11 @@ const replyCleanUpList = (msg, args) => {
 
     db.replaceStudentList(readyList);
 
-    msg.reply("Lista wyczyszczona z powtórek i nieznalezionych tagów.").then((reply) => {
+    msg.reply(msgs.cleanupMsg).then((reply) => {
         msg.delete();
         reply.delete({ "timeout": 5000 });
     });
+    msg.guild.channels.cache.get(config["botLogTextChannel"]).send(`LOG (${commands.cleanUpListCommand}): ` + msgs.cleanupMsg);
 }
 
 const replyInsertList = (msg, args) => {
@@ -395,14 +383,38 @@ const replyInsertList = (msg, args) => {
     fetch(attachment.url)
         .then(res => res.json())
         .then(out => {
+            if (!Array.isArray(out)) {
+                replyWarn(msg, "attachMismatch");
+                return;
+            }
+            for (let i = 0; i < out.length; i++) {
+                if (out[i] === undefined || out[i] === null || out[i].constructor !== Object) {
+                    replyWarn(msg, "attachMismatch");
+                    return;
+                }
+                if (Object.keys(out[i]).length !== 2) {
+                    replyWarn(msg, "attachMismatch");
+                    return;
+                }
+                if (!out[i].hasOwnProperty('name') || !out[i].hasOwnProperty('tag')) {
+                    replyWarn(msg, "attachMismatch");
+                    return;
+                }
+                if (typeof (out[i].name) !== "string" || typeof (out[i].tag) !== "string") {
+                    replyWarn(msg, "attachMismatch");
+                    return;
+                }
+            }
             db.replaceStudentList(out);
-            msg.reply("Lista studentów została zmieniona.").then((reply) => {
+            msg.reply(msgs.insertMsg).then((reply) => {
                 msg.delete();
                 reply.delete({ "timeout": 5000 })
             });
+            msg.guild.channels.cache.get(config["botLogTextChannel"]).send(`LOG (${commands.insertListCommand}): ` + msgs.insertMsg);
         })
         .catch(err => {
             replyWarn(msg, "attachMismatch");
+            return;
         })
 }
 
@@ -412,19 +424,21 @@ const replyStrictMode = (msg, args) => {
         return;
     }
 
-    if(args.length === 0){
-        if(db.isStrictMode){
-            msg.reply("Restrykcje są nałożone.").then((reply) => {
+    if (args.length === 0) {
+        if (db.isStrictMode()) {
+            msg.reply(msgs.strictStateOnMsg).then((reply) => {
                 msg.delete();
                 reply.delete({ "timeout": 5000 });
             });
+            msg.guild.channels.cache.get(config["botLogTextChannel"]).send(`LOG (${commands.strictModeCommand}): ` + msgs.strictStateOnMsg);
             return;
         }
-        else{
-            msg.reply("Restrykcje nie sąnałożone.").then((reply) => {
+        else {
+            msg.reply(msgs.strictStateOffMsg).then((reply) => {
                 msg.delete();
                 reply.delete({ "timeout": 5000 });
             });
+            msg.guild.channels.cache.get(config["botLogTextChannel"]).send(`LOG (${commands.strictModeCommand}): ` + msgs.strictStateOffMsg);
             return;
         }
     }
@@ -432,18 +446,20 @@ const replyStrictMode = (msg, args) => {
 
     if (state === "on") {
         db.setStrictMode(true);
-        msg.reply("Restrykcje nałożone.").then((reply) => {
+        msg.reply(msgs.strictEnabledMsg).then((reply) => {
             msg.delete();
             reply.delete({ "timeout": 5000 });
         });
+        msg.guild.channels.cache.get(config["botLogTextChannel"]).send(`LOG (${commands.strictModeCommand}): ` + msgs.strictEnabledMsg);
         return;
     }
     else if (state === "off") {
         db.setStrictMode(false);
-        msg.reply("Restrykcje zdjęte.").then((reply) => {
+        msg.reply(msgs.strictDisabledMsg).then((reply) => {
             msg.delete();
             reply.delete({ "timeout": 5000 });
         });
+        msg.guild.channels.cache.get(config["botLogTextChannel"]).send(`LOG (${commands.strictModeCommand}): ` + msgs.strictDisabledMsg);
         return;
     }
     else {
@@ -453,29 +469,30 @@ const replyStrictMode = (msg, args) => {
 }
 
 const replyWarn = (msg, type: String) => {
+    const replacements = { "%COMMAND_PREFIX%": commands.commandPrefix, "%HELP_COMMAND%": commands.helpCommand }
     switch (type) {
         case "voiceChanReq":
-            msg.reply("Użycie tej komendy wymaga obecności na kanale głosowym.").then((reply) => {
+            msg.reply(msgs.warnVoice).then((reply) => {
                 msg.delete();
                 reply.delete({ "timeout": 5000 });
             });
             break;
         case "paramMismatch":
-            msg.reply(`Nieprawidłowa ilość argumentów lub zły typ argumentu.\nUżyj ${commands.commandPrefix}${commands.helpCommand} po więcej informacji.`)
+            msg.reply(helpers.replaceMatches(msgs.warnParam, replacements))
                 .then((reply) => {
                     msg.delete();
                     reply.delete({ "timeout": 5000 });
                 });
             break;
         case "attachMismatch":
-            msg.reply(`Nieprawidłowa ilość załączników lub zły typ załącznika.\nUżyj ${commands.commandPrefix}${commands.helpCommand} po więcej informacji.`)
+            msg.reply(helpers.replaceMatches(msgs.warnAttach, replacements))
                 .then((reply) => {
                     msg.delete();
                     reply.delete({ "timeout": 5000 });
                 });
             break;
         default:
-            msg.reply(`<<Coś poszło nie tak (replyWarn): ${type}>>`).then((reply) => {
+            msg.reply(msgs.errorMsg).then((reply) => {
                 msg.delete();
                 reply.delete({ "timeout": 5000 });
             });
@@ -560,7 +577,7 @@ client.on('message', msg => {
             replyInsertList(msg, args);
             break
         default:
-            msg.reply(`<<Coś poszło nie tak: ${commandName}>>`);
+            msg.reply(msgs.errorMsg);
             break;
     }
 });
@@ -579,47 +596,33 @@ client.on('voiceStateUpdate', (oldMember, newMember) => {
         const name = member.nickname ? member.nickname : member.user.username;
         const memberTransformed = helpers.transformMember(member); // for roles.isX() functions
 
+
+
         // presenter joins a voice channel for the first time
         if (roles.isPresenter(memberTransformed) && !db.presenterExists(tag)) {
             db.addPresenter(name, tag);
-            member.send(
-                `Szanowny Panie.
-
-Miło mi powitać Pana na serwerze ${guild.name}.
-Jestem automatem umożliwiającym kontrolę uczestnictwa na zajęciach prowadzonych na platformie Discord.
-Aby dokonać sprawdzenia uczestnictwa należy na dostępnym kanale tekstowym (np. #wykład) wpisać komendę "${commands.commandPrefix}${commands.raportCommand}".
-Dodatkowo, serwer umożliwia sprawdzenie aktualnej frekwencji przy pomocy komendy "${commands.commandPrefix}${commands.statusCommand}".
-W celu uzyskania pomocy dostępna jest komenda "${commands.commandPrefix}${commands.helpCommand}".
-Informacje o automacie dostępne są pod komendą "${commands.commandPrefix}${commands.infoCommand}".
-W przypadku pytań proszę kierować się do administratorów serwera.
-
-Z wyrazami szacunku,
-${client.user.username}`
-            );
+            let replacements = {
+                "%GUILD_NAME%": guild.name, "BOT_NAME%": client.user.username,
+                "%COMMAND_PREFIX%": commands.commandPrefix, "%STATUS_COMMAND%": commands.statusCommand,
+                "%HELP_COMMAND%": commands.helpCommand, "%INFO_COMMAND%": commands.infoCommand,
+                "%RAPORT_COMMAND%": commands.raportCommand, "%NAME%": name
+            }
+            member.send(helpers.replaceMatches(msgs.presenterFirstMsg, replacements));
+            guild.channels.cache.get(config["botLogTextChannel"]).send(`LOG (voiceStateUpdate): ` + helpers.replaceMatches(msgs.presenterFirstMsgLog, replacements) + "\n\n" + helpers.replaceMatches(msgs.presenterFirstMsg, replacements));
         }
-        // not registered student tries to join a voice channel with strict mode enabled
-        else if (roles.isStudent(memberTransformed) && !roles.isAdmin(memberTransformed) && !db.studentExists(tag) && db.isStrictMode()) {
-            member.send(
-                `Ups...
-
-Serwer jest obecnie w trybie restrykcyjnym i wygląda na to, że nie jesteś wpisany na listę studentów.
-Ze względu na to, twoja ranga studenta została zdjęta.
-
-Powód:
-Prawdopodobnie nie podałeś swojego nazwiska, przez co nie ma możliwości wpisania Ciebie na listę obecności, bądź istnieje więcej niż jedna osoba o takich samych danych.
-
-W celu rozwiązania sprawy skontaktuj się z administracją serwera.`
-                , { "files": ["./user_kicked.png"] })
-            newMember.kick("Nie na liście studentów.");
+        // not registered student (non admin nor presenter) tries to join a voice channel with strict mode enabled
+        else if (roles.isStudent(memberTransformed) && !(roles.isAdmin(memberTransformed) || roles.isPresenter(memberTransformed)) && !db.studentExists(tag) && db.isStrictMode()) {
+            let replacements = { "%NAME%": name, "%TAG%": tag }
+            member.send(msgs.studentKickMsg, { "files": ["./user_kicked.png"] })
+            newMember.kick(msgs.studentKickReasonMsg);
             member.roles.remove(member.roles.cache); // degrade user to lowest range
+            guild.channels.cache.get(config["botLogTextChannel"]).send(`LOG (voiceStateUpdate): ` + helpers.replaceMatches(msgs.studentKickMsgLog, replacements) + "\n\n" + msgs.studentKickMsg, { "files": ["./user_kicked.png"] });
         }
-        else if (roles.isStudent(memberTransformed) && roles.isAdmin(memberTransformed) && !db.studentExists(tag) && db.isStrictMode()) {
-            member.send(
-                `Ups...
-
-Serwer jest obecnie w trybie restrykcyjnym i wygląda na to, że nie jesteś wpisany na listę studentów. Twoja obecność nie zostanie uwzględniona w pliku obecności.
-Ze względu na posiadaną przez Ciebie rangę, nie mam możliwości zdjęcia ci rangi studenta, jednak zalecam dodać siebie do listy studentów za pomocą komendy ${commands.commandPrefix}${commands.addStudentCommand} "<IMIE NAZWISKO>" "<TAG DISCORDA>".`
-                , { "files": ["./user_kicked.png"] })
+        // not registered student (admin or presenter) tries to join a voice channel with strict mode enabled
+        else if (roles.isStudent(memberTransformed) && (roles.isAdmin(memberTransformed) || roles.isPresenter(memberTransformed)) && !db.studentExists(tag) && db.isStrictMode()) {
+            let replacements = { "%COMMAND_PREFIX%": commands.commandPrefix, "%ADD_STUDENT_COMMAND%": commands.addStudentCommand, "%NAME%": name }
+            member.send(helpers.replaceMatches(msgs.adminWarnMsg, replacements), { "files": ["./user_kicked.png"] })
+            guild.channels.cache.get(config["botLogTextChannel"]).send(`LOG (voiceStateUpdate): ` + helpers.replaceMatches(msgs.adminWarnMsgLog, replacements) + "\n\n" + helpers.replaceMatches(msgs.adminWarnMsg, replacements), { "files": ["./user_kicked.png"] });
         }
     }
 })

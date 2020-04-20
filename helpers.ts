@@ -30,4 +30,10 @@ export module helpers {
         }
         return aStr;
     }
+
+    export const replaceMatches = (str, matches) => {
+        return str.replace(/%\w+%/g, function(all) {
+            return matches[all] || all;
+         });
+    }
 }

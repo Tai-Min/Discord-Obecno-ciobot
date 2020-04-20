@@ -1,6 +1,6 @@
 {
     "token" : "<YOUR DISCORD TOKEN>",
-    
+    "locale":"pl",
     "timezone": "Europe/Warsaw",
 
     "commandPrefix":"!",
@@ -20,5 +20,6 @@
 
     "presenterRoles":["Presenter"],
     "adminRoles":["Owner", "Admin"],
-    "studentRoles":["Owner", "Admin", "Student"]
+    "studentRoles":["Owner", "Admin", "Student"],
+    "botLogTextChannel":"<SOME TEXT CHANNEL ID"
 }

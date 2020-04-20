@@ -1,15 +1,25 @@
 {
-    "types":["node"],
-    "typeRoots":["./node_modules/@types"],
-    "strict":true,
+    "types": [
+        "node"
+    ],
+    "typeRoots": [
+        "./node_modules/@types"
+    ],
+    "forceConsitentCasingInFileNames": true,
+    "noImplicitReturns": true,
+    "strict": true,
+    "noUnusedLocals": true,
     "files": [
         "bot.ts",
         "commands.ts",
         "roles.ts",
         "db.ts",
-        "helpers.ts"
+        "helpers.ts",
+        "msgs.ts"
     ],
     "compilerOptions": {
-        "types": ["node"]
-      }
+        "types": [
+            "node"
+        ]
+    }
 }
