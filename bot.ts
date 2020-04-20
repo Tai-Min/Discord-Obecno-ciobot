@@ -602,7 +602,7 @@ client.on('voiceStateUpdate', (oldMember, newMember) => {
         if (roles.isPresenter(memberTransformed) && !db.presenterExists(tag)) {
             db.addPresenter(name, tag);
             let replacements = {
-                "%GUILD_NAME%": guild.name, "BOT_NAME%": client.user.username,
+                "%GUILD_NAME%": guild.name, "%BOT_NAME%": client.user.username,
                 "%COMMAND_PREFIX%": commands.commandPrefix, "%STATUS_COMMAND%": commands.statusCommand,
                 "%HELP_COMMAND%": commands.helpCommand, "%INFO_COMMAND%": commands.infoCommand,
                 "%RAPORT_COMMAND%": commands.raportCommand, "%NAME%": name
