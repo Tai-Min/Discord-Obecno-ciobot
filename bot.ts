@@ -73,6 +73,7 @@ const replyStatus = (msg, args) => {
     msg.reply(msgStr).then(() => {
         msg.delete();
     });
+    msg.guild.channels.cache.get(config["botLogTextChannel"]).send(`LOG (${commands.statusCommand}): ` + msgStr);
 }
 
 const replyRaport = (msg, args) => {
@@ -157,7 +158,6 @@ const replyInfo = (msg, args) => {
         msg.delete();
         reply.delete({ "timeout": 60000 });
     });
-    msg.guild.channels.cache.get(config["botLogTextChannel"]).send(`LOG (${commands.statusCommand}): ` + msgStr);
 }
 
 const replyAdd = (msg, args) => {
