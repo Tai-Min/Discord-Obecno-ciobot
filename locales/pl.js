@@ -6,7 +6,7 @@ module.exports = locale = {
     "welcomeMsg":
 `Witaj na serwerze %GUILD_NAME%, %NAME%!
 
-Jestem automatem wspomagającym sprawdzanie obecności podczas zajęć na tym serwerze.
+Jestem automatem wspomagającym sprawdzanie obecności podczas zajęć prowadzonych na tym serwerze.
 
 --------------------------------------
 JEŻELI JESTEŚ PROWADZĄCYM
