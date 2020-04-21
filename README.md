@@ -15,7 +15,7 @@ Bot stworzony w celu uproszczenia procesu prowadzenia zajęć na platformie Disc
 * Możliwość dodania wszystkich osób z rolą studenta do serwerowej listy studentów
 * Usuwanie z listy studentów osób - duplikatów (imie nazwisko lub tag)
 
-Komendy sprawdzania studentów jak i usuwanie duplikatów ignorują wielkość liter oraz polskie znaki, czyli osoba Michał ąę zostanie uznala za duplikat osoby michal ae.
+Komendy sprawdzania studentów jak i usuwanie duplikatów ignorują wielkość liter oraz polskie znaki, czyli osoba Michał ąę zostanie uznana za duplikat osoby michal ae.
 
 
 ## Instalacja
