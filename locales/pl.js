@@ -179,5 +179,7 @@ W celu rozwiązania sprawy skontaktuj się z administracją serwera.`,
 Serwer jest obecnie w trybie restrykcyjnym i wygląda na to, że nie jesteś wpisany na listę studentów. Twoja obecność nie zostanie uwzględniona w pliku obecności.
 Ze względu na posiadaną przez Ciebie rangę, nie mam możliwości zdjęcia ci rangi studenta, jednak zalecam dodać siebie do listy studentów za pomocą komendy %COMMAND_PREFIX%%ADD_STUDENT_COMMAND% "<IMIE NAZWISKO>" "<TAG DISCORDA>".`,
 
-    "studentKickReasonMsg": "Nie na liście studentów."
+    "studentKickReasonMsg": "Nie na liście studentów.",
+
+    "presenterJoinMsg": "Prowadzący %NAME% dołączył do kanału głosowego %CHANNEL%."
 }

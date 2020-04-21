@@ -65,4 +65,5 @@ export const presenterFirstMsg = locale["presenterFirstMsg"];
 export const studentKickMsg = locale["studentKickMsg"];
 export const adminWarnMsg = locale["adminWarnMsg"];
 export const studentKickReasonMsg = locale["studentKickReasonMsg"];
+export const presenterJoinMsg = locale["presenterJoinMsg"];
 }

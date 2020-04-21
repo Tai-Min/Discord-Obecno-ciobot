@@ -21,5 +21,7 @@
     "presenterRoles":["Presenter"],
     "adminRoles":["Owner", "Admin"],
     "studentRoles":["Owner", "Admin", "Student"],
-    "botLogTextChannel":"<SOME TEXT CHANNEL ID"
+    "botLogTextChannel":"<SOME TEXT CHANNEL ID>",
+    "botMentionChannel":"<SOME TEXT CHANNEL ID>",
+    "rolesToMention":["Owner", "Admin", "Student"]
 }

@@ -598,17 +598,33 @@ client.on('voiceStateUpdate', (oldMember, newMember) => {
 
 
 
-        // presenter joins a voice channel for the first time
-        if (roles.isPresenter(memberTransformed) && !db.presenterExists(tag)) {
-            db.addPresenter(name, tag);
+        // presenter joins a voice channel
+        if (roles.isPresenter(memberTransformed)) {
             let replacements = {
                 "%GUILD_NAME%": guild.name, "%BOT_NAME%": client.user.username,
                 "%COMMAND_PREFIX%": commands.commandPrefix, "%STATUS_COMMAND%": commands.statusCommand,
                 "%HELP_COMMAND%": commands.helpCommand, "%INFO_COMMAND%": commands.infoCommand,
-                "%RAPORT_COMMAND%": commands.raportCommand, "%NAME%": name
+                "%RAPORT_COMMAND%": commands.raportCommand, "%NAME%": name, "%CHANNEL%": newMember.channel.name
             }
-            member.send(helpers.replaceMatches(msgs.presenterFirstMsg, replacements));
-            guild.channels.cache.get(config["botLogTextChannel"]).send(`LOG (voiceStateUpdate): ` + helpers.replaceMatches(msgs.presenterFirstMsgLog, replacements) + "\n\n" + helpers.replaceMatches(msgs.presenterFirstMsg, replacements));
+            // for the first time
+            if (!db.presenterExists(tag)) {
+                db.addPresenter(name, tag);
+                member.send(helpers.replaceMatches(msgs.presenterFirstMsg, replacements));
+                guild.channels.cache.get(config["botLogTextChannel"]).send(`LOG (voiceStateUpdate): ` + helpers.replaceMatches(msgs.presenterFirstMsgLog, replacements) + "\n\n" + helpers.replaceMatches(msgs.presenterFirstMsg, replacements));
+            }
+            let mentionStr = ""
+            
+            guild.roles.cache.forEach(role => {
+                if (config["rolesToMention"].includes(role.name)) {
+                    mentionStr += "<@&" + role.id + "> ";
+                }
+            })
+
+            guild.channels.cache.get(config["botMentionChannel"]).send(mentionStr + helpers.replaceMatches(msgs.presenterJoinMsg, replacements))
+            .then((msg)=>{
+                msg.delete({"timeout": 60000})
+            });
+            guild.channels.cache.get(config["botLogTextChannel"]).send(`LOG (voiceStateUpdate): ` + helpers.replaceMatches(msgs.presenterJoinMsg, replacements));
         }
         // not registered student (non admin nor presenter) tries to join a voice channel with strict mode enabled
         else if (roles.isStudent(memberTransformed) && !(roles.isAdmin(memberTransformed) || roles.isPresenter(memberTransformed)) && !db.studentExists(tag) && db.isStrictMode()) {
@@ -630,10 +646,10 @@ client.on('voiceStateUpdate', (oldMember, newMember) => {
 client.on('guildMemberAdd', member => {
     const guild = member.guild
     const name = member.nickname ? member.nickname : member.user.username;
-    const replacements = {"%NAME%":name, "%GUILD_NAME%": guild.name, "%BOT_NAME%": client.user.username};
-    member.send(helpers.replaceMatches(msgs.welcomeMsg,replacements), {"files":['./hello.gif']});
+    const replacements = { "%NAME%": name, "%GUILD_NAME%": guild.name, "%BOT_NAME%": client.user.username };
+    member.send(helpers.replaceMatches(msgs.welcomeMsg, replacements), { "files": ['./hello.gif'] });
     guild.channels.cache.get(config["botLogTextChannel"]).send(`LOG (guildMemberAdd): ` + helpers.replaceMatches(msgs.welcomeMsgLog, replacements) + "\n\n" + helpers.replaceMatches(msgs.welcomeMsg, replacements), { "files": ["./hello.gif"] });
-  
+
 });
 
 client.login(config["token"]);
