@@ -1,10 +1,32 @@
 module.exports = locale = {
     "errorMsg": "Coś poszło nie tak...",
 
+    "welcomeMsgLog":`Użytkownik %NAME% dołączył do serwera. Wysłano następującą wiadomość:`,
+
+    "welcomeMsg":
+`Witaj na serwerze %GUILD_NAME%, %NAME%!
+
+Jestem automatem wspomagającym sprawdzanie obecności podczas zajęć na tym serwerze.
+
+--------------------------------------
+JEŻELI JESTEŚ PROWADZĄCYM
+--------------------------------------
+Wkrótce otrzymasz rangę prowadzącego umożliwiającą dołączanie do głosowych oraz tekstowych kanałów wykładowych.
+Przy pierwszym dołączeniu do kanału głosowego otrzymasz ode mnie drugą wiadomość opisującą, w jaki sposób wygodnie sprawdzić obecność oraz frekwencję podczas zajęć.
+
+---------------------------------
+JEŻELI JESTEŚ STUDENTEM
+---------------------------------
+Wkrótce otrzymasz rangę studenta. Po otrzymaniu rangi polecam wejśc testowo na jeden z kanałów głosowych. Istnieje szansa, że serwer jest w trybie restrykcyjnym i z jakiegoś powodu nie zostałeś dodany do listy studentów. W takim wypadku zostaniesz wyrzucony z kanału i zdegradowany z roli studenta. W takiej sytuacji pisz do administratorów aby dodali cię do listy.
+
+Z pozdrowieniami,
+%BOT_NAME%
+`,
+
     "adminHelp": `
----------------------
+-----------------------------
 Komendy prowadzącego:
----------------------
+-----------------------------
 %COMMAND_PREFIX%%HELP_COMMAND% - Wyświetla tą wiadomość.
 %COMMAND_PREFIX%%STATUS_COMMAND% - Wyświetla aktualną frekwencję na wykładzie, wymaga obecności na kanale głosowym.
 %COMMAND_PREFIX%%RAPORT_COMMAND% - Generuje plik csv z obecnością, wymaga obecności na kanale głosowym.
@@ -12,9 +34,9 @@ Komendy prowadzącego:
     * W trybie swobodnym lista generowana jest najpierw na podstawie pseudonimu a w przypadku jego braku, na podstawie nazwy użytkownika.
 %COMMAND_PREFIX%%INFO_COMMAND% - Wyświetla informacje o tym bocie.
 
-------------------------
+-------------------------------
 Komendy administracyjne:
-------------------------
+-------------------------------
 %COMMAND_PREFIX%%ADD_STUDENT_COMMAND% "<IMIE NAZWISKO>" "<TAG DISCORDA>" - Dodaje studenta do listy studentów.
 %COMMAND_PREFIX%%REMOVE_STUDENT_COMMAND% <TAG DISCORDA> - Usuwa studenta z listy studentów.
 %COMMAND_PREFIX%%CHECK_STUDENT_COMMAND% %NAME_PARAM% "<IMIE NAZWISKO>" | tag "<TAG DISCORDA>" - Sprawdza, czy student znajduje się na liście studentów.

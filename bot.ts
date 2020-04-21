@@ -627,4 +627,13 @@ client.on('voiceStateUpdate', (oldMember, newMember) => {
     }
 })
 
+client.on('guildMemberAdd', member => {
+    const guild = member.guild
+    const name = member.nickname ? member.nickname : member.user.username;
+    const replacements = {"%NAME%":name, "%GUILD_NAME%": guild.name, "%BOT_NAME%": client.user.username};
+    member.send(helpers.replaceMatches(msgs.welcomeMsg,replacements), {"files":['./hello.gif']});
+    guild.channels.cache.get(config["botLogTextChannel"]).send(`LOG (guildMemberAdd): ` + helpers.replaceMatches(msgs.welcomeMsgLog, replacements) + "\n\n" + helpers.replaceMatches(msgs.welcomeMsg, replacements), { "files": ["./hello.gif"] });
+  
+});
+
 client.login(config["token"]);

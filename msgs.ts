@@ -6,6 +6,9 @@ const locale = require('./locales/' + localeName + '.js');
 
 export const errorMsg = locale["errorMsg"];
 
+export const welcomeMsgLog = locale["welcomeMsgLog"];
+export const welcomeMsg = locale["welcomeMsg"];
+
 export const adminHelp = locale["adminHelp"];
 export const presenterHelp = locale["presenterHelp"];
 
