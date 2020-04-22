@@ -38,7 +38,7 @@ Komendy prowadzącego:
 Komendy administracyjne:
 -------------------------------
 %COMMAND_PREFIX%%ADD_STUDENT_COMMAND% "<IMIE NAZWISKO>" "<TAG DISCORDA>" - Dodaje studenta do listy studentów.
-%COMMAND_PREFIX%%REMOVE_STUDENT_COMMAND% <TAG DISCORDA> - Usuwa studenta z listy studentów.
+%COMMAND_PREFIX%%REMOVE_STUDENT_COMMAND% "<TAG DISCORDA>" - Usuwa studenta z listy studentów.
 %COMMAND_PREFIX%%CHECK_STUDENT_COMMAND% %NAME_PARAM% "<IMIE NAZWISKO>" | tag "<TAG DISCORDA>" - Sprawdza, czy student znajduje się na liście studentów.
 %COMMAND_PREFIX%%DUMP_COMMAND% - Wypisuje wszystkie osoby na liście studentów do pliku json.
 %COMMAND_PREFIX%%INSERT_ALL_COMMAND% - Dodaje do listy studentów wszystkie osoby posiadające przynajmniej jedną z roli studenta, zwraca logi operacji załączone w pliku txt.

@@ -10,7 +10,7 @@ export module roles {
             return false;
 
         for (var i = 0; i < adminRoles.length; i++) {
-            if (member.roles.cache.some(role => role.name === adminRoles[i])) {
+            if (member.roles.cache.some(role => role.id === adminRoles[i])) {
                 return true;
             }
         }
@@ -22,7 +22,7 @@ export module roles {
             return false;
 
         for (var i = 0; i < presenterRoles.length; i++) {
-            if (member.roles.cache.some(role => role.name === presenterRoles[i])) {
+            if (member.roles.cache.some(role => role.id === presenterRoles[i])) {
                 return true;
             }
         }
@@ -34,7 +34,7 @@ export module roles {
             return false;
 
         for (var i = 0; i < studentRoles.length; i++) {
-            if (member.roles.cache.some(role => role.name === studentRoles[i])) {
+            if (member.roles.cache.some(role => role.id === studentRoles[i])) {
                 return true;
             }
         }

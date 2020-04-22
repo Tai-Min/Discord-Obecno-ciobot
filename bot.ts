@@ -583,7 +583,6 @@ client.on('message', msg => {
 });
 
 client.on('voiceStateUpdate', (oldMember, newMember) => {
-
     const newUserChannel = newMember.channelID // currently joined channel
     const oldUserChannel = oldMember.channelID // previous channel
 
@@ -595,8 +594,6 @@ client.on('voiceStateUpdate', (oldMember, newMember) => {
         const tag = member.user.username + "#" + member.user.discriminator;
         const name = member.nickname ? member.nickname : member.user.username;
         const memberTransformed = helpers.transformMember(member); // for roles.isX() functions
-
-
 
         // presenter joins a voice channel
         if (roles.isPresenter(memberTransformed)) {
@@ -612,10 +609,10 @@ client.on('voiceStateUpdate', (oldMember, newMember) => {
                 member.send(helpers.replaceMatches(msgs.presenterFirstMsg, replacements));
                 guild.channels.cache.get(config["botLogTextChannel"]).send(`LOG (voiceStateUpdate): ` + helpers.replaceMatches(msgs.presenterFirstMsgLog, replacements) + "\n\n" + helpers.replaceMatches(msgs.presenterFirstMsg, replacements));
             }
-            let mentionStr = ""
             
+            let mentionStr = ""
             guild.roles.cache.forEach(role => {
-                if (config["rolesToMention"].includes(role.name)) {
+                if (config["rolesToMention"].includes(role.id)) {
                     mentionStr += "<@&" + role.id + "> ";
                 }
             })

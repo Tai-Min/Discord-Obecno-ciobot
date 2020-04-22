@@ -18,10 +18,10 @@
     "cleanUpListCommand": "clear",
     "insertListCommand": "replace",
 
-    "presenterRoles":["Presenter"],
-    "adminRoles":["Owner", "Admin"],
-    "studentRoles":["Owner", "Admin", "Student"],
+    "presenterRoles":["<SOME ROLE ID>"],
+    "adminRoles":["<SOME ROLE ID>", "<SOME ROLE ID>"],
+    "studentRoles":["<SOME ROLE ID>", "<SOME ROLE ID>", "<SOME ROLE ID>"],
     "botLogTextChannel":"<SOME TEXT CHANNEL ID>",
     "botMentionChannel":"<SOME TEXT CHANNEL ID>",
-    "rolesToMention":["Owner", "Admin", "Student"]
+    "rolesToMention":["<SOME ROLE ID>", "<SOME ROLE ID>", "<SOME ROLE ID>"]
 }
