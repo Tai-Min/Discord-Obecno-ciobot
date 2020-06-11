@@ -24,28 +24,32 @@ W pliku config.json, w polu token należy dodać unikalny token bota (https://di
 
 ### config.json
 Plik umożliwiający przypisywanie serwerowych ról do prowadzących, studentów i adminów oraz zmiana nazw poszczególnych komend.
-* adminRoles - Tablica ról przypisanych do administratorów,
-* presenterRoles - Tablica ról przypisanych do prowadzących,
-* studentRoles - Tablica ról przypisanych do studentów,
+* adminRoles - Tablica identyfikatorów ról przypisanych do administratorów,
+* presenterRoles - Tablica identyfikatorów ról przypisanych do prowadzących,
+* studentRoles - Tablica identyfikatorów ról przypisanych do studentów,
+* botLogTextChannel - Identyfikator kanału tekstowego, na którym bot wypisuje logi,
+* botMentionChannel - Identyfikator kanału tekstowego, na którym bot dokonuje ogłoszeń, np. pojawieniu się wykładowcy na kanale głosowym,
+* rolesToMention - Tablica identyfikatorów ról, które powinny zostać oznaczone w ogłoszeniach bota,
 * commandPrefix - Znak stawiany przed komendą,
 * helpCommand - Wyświetla komendy dostępne dla danej roli wraz z ich opisem,
 * statusCommand - Frekwencja na zajęciac,
 * infoCommand - Wyświetla informacje o bocie,
 * raportCommand - Generuje plik csv z obecnością,
 * addStudentCommand - Dodanie pojedynczego studenta do serwerowej listy studentów,
-* removeStudentCommand - Usunięcie studenta z serwerowej listy studentów
+* removeStudentCommand - Usunięcie studenta z serwerowej listy studentów,
 * checkStudentCommand - Sprawdzenie, czy student znajduje się na serwerowej liście studentów,
 * strictModeCommand - Włącza lub wyłącza tryb restrykcyjny,
 * dumpCommand - Zwraca serwerową listę studentów jako plik json,
-* insertAllCommand - Dodaje do serwera wszystkie osoby z przypisaną rolą studenta
+* insertAllCommand - Dodaje do serwera wszystkie osoby z przypisaną rolą studenta,
 * cleanUpListCommand - Czyści serwerową listę studentów z duplikatów i osób nie znajdujących się na serwerze,
-* insertListCommand - Podmienienie serwerowej listy studentów na załączony plik json
+* insertListCommand - Podmienienie serwerowej listy studentów na załączony plik json.
 
 ### Instalacja bezpośrednia
 #### Instalacja narzędzi
 W celu uruchomienia bota wymagane jest nodejs (https://nodejs.org/en/) oraz Yarn (https://classic.yarnpkg.com/en/).
 
 Po zainstalowaniu wymaganych narzędzi należy zmienić nazwę pliku example_config.json na config.json. 
+
 #### Uruchomienie bota
 W folderze projektu, w oknie poleceń należy wywołać:
 ```
@@ -61,6 +65,9 @@ docker pull node
 W katalogu projektu:
 ```
 docker-compose build
+```
+Po zbudowaniu można uruchomić bota (w katalogu projektu):
+```
 docker-compose up -d
 ```
 
