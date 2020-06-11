@@ -12,8 +12,8 @@ Bot stworzony w celu uproszczenia procesu prowadzenia zajęć na platformie Disc
   * Restrykcyjny - Obecność oraz frekwencja sprawdzone są na podstawie użytkowników dodanych do serwerowej listy studentów, nieobecność na tej liście wyrzuca studenta z kanału głosowego i odbiera wszystkie role.
 * Dodawanie i usuwanie osób z serwerowej listy studentów pojedynczo i masowo, za pomocą pliku json,
 * Sprawdzanie, czy osoba dana po imieniu i nazwisku, bądź po tagu, znajduje się na serwerowej liście studentów,
-* Możliwość dodania wszystkich osób z rolą studenta do serwerowej listy studentów
-* Usuwanie z listy studentów osób - duplikatów (imie nazwisko lub tag)
+* Możliwość dodania wszystkich osób z rolą studenta do serwerowej listy studentów,
+* Usuwanie z listy studentów osób - duplikatów (imie nazwisko lub tag).
 
 Komendy sprawdzania studentów jak i usuwanie duplikatów ignorują wielkość liter oraz polskie znaki, czyli osoba Michał ąę zostanie uznana za duplikat osoby michal ae.
 
