@@ -51,10 +51,16 @@ W celu uruchomienia bota wymagane jest nodejs (https://nodejs.org/en/) oraz Yarn
 Po zainstalowaniu wymaganych narzędzi należy zmienić nazwę pliku example_config.json na config.json. 
 
 #### Uruchomienie bota
-W folderze projektu, w oknie poleceń należy wywołać:
+W folderze projektu, w oknie poleceń należy wywołać:<br\>
+Pierwsze uruchomienie:
 ```
 yarn install
 tsc
+yarn start
+```
+
+Następne uruchomienia:
+```
 yarn start
 ```
 
