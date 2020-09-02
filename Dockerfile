@@ -1,4 +1,4 @@
-FROM node:12
+FROM node:12-alpine
 
 ENV PATH=$PATH:/home/node/node_modules/.bin
 
@@ -6,13 +6,10 @@ USER root
 
 WORKDIR /home/node
 
-COPY package.json ./home/node
-
 COPY . .
 
 RUN yarn install
-RUN tsc
 
-EXPOSE 80
+RUN tsc
 
 CMD ["yarn", "start"]
