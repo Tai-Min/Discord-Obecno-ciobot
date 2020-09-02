@@ -59,14 +59,7 @@ yarn start
 ```
 
 ### Instalacja w kontenerze (Docker)
-```
-docker pull node
-```
-W katalogu projektu:
-```
-docker-compose build
-```
-Po zbudowaniu można uruchomić bota (w katalogu projektu):
+
 ```
 docker-compose up -d
 ```
