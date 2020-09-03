@@ -9,6 +9,4 @@ services:
     volumes:
       - ./config:/home/node/config
       - ./db:/home/node/db
-    ports:
-      - 80:80
     restart: unless-stopped
