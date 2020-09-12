@@ -5,7 +5,7 @@
         "discord.js": "^12.1.1",
         "lowdb": "^1.0.0",
         "moment-timezone": "^0.5.28",
-        "node-fetch": "^2.6.0",
+        "node-fetch": "^2.6.1",
         "remove-accents": "^0.4.2"
     },
     "devDependencies": {
