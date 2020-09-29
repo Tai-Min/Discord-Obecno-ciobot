@@ -5,7 +5,7 @@ Bot stworzony w celu uproszczenia procesu prowadzenia zajęć na platformie Disc
 #### Dla prowadzących:
 * Generowanie listy obecności osób z rolą studenta przebywających na kanale głosowym - plik csv o strukturze:<br/> lp,imie nazwisko,przydzielona specjalizacja.
 
-### Dla administratorów:
+#### Dla administratorów:
 * Komenda pozwalająca na automatyczne przydzielanie specjalizacji studentom przy użyciu reakcji.
 
 ## Instalacja
