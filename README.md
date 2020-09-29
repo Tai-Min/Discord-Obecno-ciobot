@@ -9,11 +9,33 @@ Bot stworzony w celu uproszczenia procesu prowadzenia zajęć na platformie Disc
 * Komenda pozwalająca na automatyczne przydzielanie specjalizacji studentom przy użyciu reakcji.
 
 ## Instalacja
-Po rozpakowaniu repozytorium należy zmienić nazwę pliku example_config.json na config.json i uzupełnić wymagane dane, w tym token, identyfikatory serwera oraz ról.<br/>
-W polu token należy dodać unikalny token bota (https://discordapp.com/developers zakładka bot -> "Click to Reveal Token").<br/>
-W polach identyfikatorów należy podać identyfikatory gildii oraz ról, które są dostępne po kliknięciu prawym przyciskiem myszy na server / rolę przy włączonym trybie dewelopera (Ustawienia->Wygląd->Tryb dewelopera) i użycie opcji "Kopiuj ID".
+Po rozpakowaniu repozytorium należy zmienić nazwę pliku example_config.json na config.json i uzupełnić wymagane dane według następnego podpunktu.<br/>
 
 ### config.json
+* botToken - Token bota z https://discordapp.com/developers -> Bot -> Click to Reveal Token.
+* guildId - Identyfikator gildii otrzymywany poprzez opcję Kopiuj ID po naciśnięciu prawym przyciskiem myszy na nazwę serwera (w trybie dewelopera).
+* logChannelId - Identyfikator kanału logów bota otrzymywany poprzez opcję Kopiuj ID po naciśnięciu prawym przyciskiem myszy na dany kanał tekstowy (w trybie dewelopera).
+* voteChannelId - Identyfikator kanału, na którym pojawiać się będzie opcja przypisania do danej specjalizacji, otrzymywany tak jak logChannelId.
+* adminRoles - Zbiór identyfikatorów ról administratorów serwera. Identyfikatory otrzymywane są przez opcję Kopiuj ID dostępną w ustawieniach serwera -> Role -> prawy przycisk myszy na daną rolę.
+* presenterRoles - Zbiór identyfikatorów ról przyznawanych wykładowcom. Otrzymywane tak, jak adminRoles.
+* studentRoles - Zbiór identyfikatorów ról przyznawanych studentom. Otrzymywane tak, jak adminRoles.
+* specs - Zbiór obiektów specjalizacji. Każdy obiekt powinen posiadać następujące pola:
+  * name - Nazwa specjalizacji.
+  * reaction - Emoji reakcji, na którą trzeba zagłosować, aby wybrać specjalizację.
+  * rolesToAssign - Zbiór identyfikatorów ról przyznawanych danej specjalizacji. Otrzymywane tak, jak adminRoles.
+  * rolesToRemove - Zbiór identyfikatorów ról, których dana specjalizacja mieć nie powinna. Przykładowo mogą to być identyfikatory ról innych specjalizacji. Otrzymywane tak, jak adminRoles.
+* statusMsg - Wiadomość wyświetlana pod nickiem bota.
+* commandPrefix - Ciąg znaków, które powinny pojawić się na początku wiadomości, aby bot zareagował na komendę.
+
+### strings.js
+* aboutCommand - Komenda wyświetlająca informacje o bocie.
+* helpCommand - Komenda wyświetlająca dostępne dla danej roli komendy.
+* assigmentCommand - Komenda włączająca bądź wyłączająca możliwość wyboru specjalizacji.
+* persenceCommand - Komenda generująca plik csv z frekwencją na kanale głosowym, na którym znajduje się osoba wywołująca komendę.
+* welcomeEmbedDescriptionForPresenters - Wiadomość powitalna dla wykładowców.
+* welcomeEmbedDescriptionForStudents - Wiadomość powitalna dla studentów.
+<br/>
+Reszta opcji to komunikaty wyświetlane przez bota.
 
 ### Instalacja bezpośrednia
 #### Instalacja narzędzi
