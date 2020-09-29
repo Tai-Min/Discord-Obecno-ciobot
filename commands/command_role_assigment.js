@@ -22,9 +22,14 @@ class RoleAssigmentCommand extends Command {
         // stop voting
         if(bot.voteMsg !== undefined){
             bot.sendLogs(name + " disabled spec voting.");
-            msg.delete();
-            bot.voteMsg.delete().then(()=>{
+            bot.voteMsg.delete()
+            .then(()=>{
                 bot.voteMsg = undefined;
+                msg.delete();
+            })
+            .catch(()=>{
+                bot.voteMsg = undefined;
+                this.exec(bot, msg, args)
             });
             return true;
         }

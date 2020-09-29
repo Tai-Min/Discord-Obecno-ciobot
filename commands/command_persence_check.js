@@ -36,7 +36,7 @@ class PersenceCheckCommand extends Command {
                 cntr++;
             }
         });
-        console.log(list);
+
         const filename = strings.persenceFilename;
         const bufSize = Buffer.byteLength(list, 'utf-8');
         const buf = Buffer.alloc(bufSize, 'utf-8');
