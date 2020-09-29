@@ -1,27 +1,34 @@
 {
-    "token" : "<YOUR DISCORD TOKEN>",
-    "locale":"pl",
-    "timezone": "Europe/Warsaw",
+    "botToken": "<YOUR BOT TOKEN>",
 
-    "commandPrefix":"!",
+    "guildId":"<GUILD ID>",
+    "logChannelId":"<LOG CHANNEL ID>",
+    "voteChannelId":"<VOTE CHANNEL ID>",
 
-    "statusCommand":"status",
-    "helpCommand":"help",
-    "infoCommand":"info",
-    "raportCommand":"raport",
-    "addStudentCommand":"add",
-    "removeStudentCommand":"remove",
-    "checkStudentCommand":"check",
-    "strictModeCommand":"restrict",
-    "dumpCommand":"list",
-    "insertAllCommand":"collect",
-    "cleanUpListCommand": "clear",
-    "insertListCommand": "replace",
+    "adminRoles": ["<ADMIN ROLE>"],
+    "presenterRoles": ["<PRESENTER ROLE 1>", "<PRESENTER ROLE 2"],
+    "studentRoles":["<STUDENT ROLE>"],
+    "specs":[
+        {
+            "name":"SPEC 1",
+            "reaction":"🟡",
+            "rolesToAssign":["<ROLE 1>", "<ROLE 2>"],
+            "rolesToRemove":["<ROLE 3>", "<ROLE 4>"]
+        },
+        {
+            "name":"SPEC 2",
+            "reaction":"🟠",
+            "rolesToAssign":["<ROLE 3>", "<ROLE 2>"],
+            "rolesToRemove":["<ROLE 1>", "<ROLE 4>"]
+        },
+        {
+            "name":"SPEC 3",
+            "reaction":"🔴",
+            "rolesToAssign":["<ROLE 4>", "<ROLE 2>"],
+            "rolesToRemove":["<ROLE 1>", "<ROLE 3>"]
+        }
+    ],
 
-    "presenterRoles":["<SOME ROLE ID>"],
-    "adminRoles":["<SOME ROLE ID>", "<SOME ROLE ID>"],
-    "studentRoles":["<SOME ROLE ID>", "<SOME ROLE ID>", "<SOME ROLE ID>"],
-    "botLogTextChannel":"<SOME TEXT CHANNEL ID>",
-    "botMentionChannel":"<SOME TEXT CHANNEL ID>",
-    "rolesToMention":["<SOME ROLE ID>", "<SOME ROLE ID>", "<SOME ROLE ID>"]
+    "statusMsg":"SAMPLE TEXT",
+    "commandPrefix":">"
 }

@@ -1,12 +1,11 @@
 version: "2"
 services:
   nadzorca:
-    image: nadzorca
+    image: automat
     build: .
     working_dir: /home/node
     environment:
       - NODE_ENV=production
     volumes:
       - ./config:/home/node/config
-      - ./db:/home/node/db
     restart: unless-stopped

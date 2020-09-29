@@ -1,5 +1,6 @@
 config/config.json
-db/db.json
+config/strings.js
+
 node_modules
 *Dockerfile*
 *docker-compose*

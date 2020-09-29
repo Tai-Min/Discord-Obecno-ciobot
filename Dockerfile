@@ -8,8 +8,6 @@ WORKDIR /home/node
 
 COPY . .
 
-RUN yarn install
+RUN npm install
 
-RUN tsc
-
-CMD ["yarn", "start"]
+CMD ["npm", "start"]
