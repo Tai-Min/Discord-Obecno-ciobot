@@ -6,7 +6,7 @@ USER root
 
 WORKDIR /home/node
 
-COPY . .
+COPY package.json package.json
 
 RUN npm install
 
