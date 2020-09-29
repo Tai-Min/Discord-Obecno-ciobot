@@ -1,7 +1,7 @@
 {
   "name": "automat",
   "version": "1.0.0",
-  "description": "",
+  "description": "Simple bot to check persence during online classes on Discord app.",
   "main": "bot.js",
   "scripts": {
     "start": "node bot.js"
@@ -11,5 +11,9 @@
   "license": "MIT",
   "dependencies": {
     "discord.js": "^12.3.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Tai-Min/Discord-Obecnosciobot.git"
   }
 }
