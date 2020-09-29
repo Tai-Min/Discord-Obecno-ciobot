@@ -87,6 +87,11 @@ class Bot {
         const member = this.guild.members.cache.get(user.id);
         const name = member.nickname ? member.nickname : member.user.username;
 
+        if(helpers.isPresenter(member)){
+            this.sendLogs("Presenter " + name + " tried to assign spec role.")
+            return;
+        }
+
         // find out what role to assign to user
         for (let i = 0; i < config["specs"].length; i++) {
             if(config["specs"][i].reaction === reaction._emoji.name){
