@@ -7,5 +7,5 @@ services:
     environment:
       - NODE_ENV=production
     volumes:
-      - ./config:/home/node/config
+      - ./:/home/node
     restart: unless-stopped
