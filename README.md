@@ -11,7 +11,7 @@ Bot stworzony w celu uproszczenia procesu prowadzenia zajęć na platformie Disc
 ## Instalacja
 Po rozpakowaniu repozytorium należy zmienić nazwę pliku example_config.json na config.json i uzupełnić wymagane dane, w tym token, identyfikatory serwera oraz ról.<br/>
 W polu token należy dodać unikalny token bota (https://discordapp.com/developers zakładka bot -> "Click to Reveal Token").<br/>
-W polach identyfikatorów należy podać identyfikatory gildii oraz ról dostępne po kliknięciu prawym przyciskiem myszy na server / rolę przy włączonym trybie dewelopera (Ustawienia->Wygląd->Tryb dewelopera) i użycie opcji "Kopiuj ID".
+W polach identyfikatorów należy podać identyfikatory gildii oraz ról, które są dostępne po kliknięciu prawym przyciskiem myszy na server / rolę przy włączonym trybie dewelopera (Ustawienia->Wygląd->Tryb dewelopera) i użycie opcji "Kopiuj ID".
 
 ### config.json
 
