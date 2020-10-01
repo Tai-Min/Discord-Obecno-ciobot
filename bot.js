@@ -7,12 +7,14 @@ const AboutCommand = require('./commands/command_about.js');
 const RoleAssigmentCommand = require('./commands/command_role_assigment.js');
 const PersenceCheckCommand = require('./commands/command_persence_check.js');
 const TableCommand = require('./commands/command_table.js');
+const AutoTableCommand = require('./commands/command_autotable.js');
 
 aboutCommand = new AboutCommand();
 roleAssigmentCommand = new RoleAssigmentCommand();
 persenceCheckCommand = new PersenceCheckCommand();
 tableCommand = new TableCommand();
-commands = [aboutCommand, roleAssigmentCommand, persenceCheckCommand, tableCommand]; // commands available to this bot
+autoTableCommand = new AutoTableCommand();
+commands = [aboutCommand, roleAssigmentCommand, persenceCheckCommand, tableCommand, autoTableCommand]; // commands available to this bot
 
 helpCommand = new HelpCommand(commands)
 commands.unshift(helpCommand); // add help command
@@ -29,8 +31,6 @@ class Bot {
                     name: statusMsg,
                 }
             });
-
-            //this.sendLogs("Bot running.");
         });
 
         // message callback to process commands from guild and dm's
@@ -68,6 +68,8 @@ class Bot {
         this.client.guilds.fetch(guildId)
             .then(guild => {
                 this.guild = guild;
+                autoTableCommand.setClientStartUpdater(this.client);
+
                 return this.logChannel = this.client.channels.fetch(logChannelId);
             }).then(logChannel => {
                 this.logChannel = logChannel;

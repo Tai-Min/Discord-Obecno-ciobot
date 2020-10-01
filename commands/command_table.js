@@ -4,11 +4,10 @@ const strings = require('../config/strings.js');
 const fetch = require('node-fetch');
 const { table } = require('table');
 
-class HelpCommand extends Command {
-    constructor(otherCommands) {
+class TableCommand extends Command {
+    constructor() {
         super();
         this.commandName = strings.tableCommand;
-        this.otherCommands = otherCommands;
         this.reqRole = "presenter";
         this.descriptionString = strings.tableDescription;
     }
@@ -47,10 +46,16 @@ class HelpCommand extends Command {
     }
 
     exec(bot, msg, args) {
+        const name = msg.member.nickname ? msg.member.nickname : msg.member.user.username;
         if (!this.canUseCommand(msg.member)) {
             bot.sendLogs(name + " tried to use " + this.commandName + " but don't have permissions.");
             msg.delete();
             return false;
+        }
+
+        if(args.length < 2){
+            bot.sendLogs(name + " tried to use " + this.commandName + " but provided not enough arguments.");
+            this.replyThenDelete(msg, strings.tableNotEnoughArguments, 10000);
         }
 
         const spreadsheetId = args[0];
@@ -71,6 +76,7 @@ class HelpCommand extends Command {
                 }
                 Promise.all(promises)
                 .then(()=>{
+                    bot.sendLogs(name + " generated table in channel " + msg.channel.name);
                     msg.delete();
                 })
             }).catch(() => {
@@ -80,4 +86,4 @@ class HelpCommand extends Command {
     }
 }
 
-module.exports = HelpCommand;
+module.exports = TableCommand;

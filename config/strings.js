@@ -4,6 +4,7 @@ module.exports = {
     assigmentCommand: 'specki',
     persenceCommand: 'obecnosc',
     tableCommand: 'tabela',
+    autoTableCommand: 'autotabela',
 
     aboutDescription: 'Zwraca informacje o tym bocie.',
     helpDescription: 'Wyświetla dostępne komendy dla tego bota.',
@@ -14,6 +15,11 @@ Format:
 >tabela <Identyfikator arkusza, tzn długi ciąg znaków z udostępnionego linku> <Zakres komórek>. 
 Przykładowo:
 >tabela 1VPo5JEN_iWghirM4BxpTOWmlgtWU6mZNSYaEyZiQg_I Arkusz1!A1:D5`,
+    autoTableDescription: `Generuje samoaktualizującą się co 10 minut tabelę z danymi wyciągniętymi z Google Spreadsheets.
+Format:
+>autotabela <Identyfikator arkusza, tzn długi ciąg znaków z udostępnionego linku> <Zakres komórek> <Ilość wiadomości przeznaczonych na tabelę>
+Przykładowo:
+>tabela 1VPo5JEN_iWghirM4BxpTOWmlgtWU6mZNSYaEyZiQg_I Arkusz1!A1:D5 3`,
 
     welcomeEmbedColor: '#9b59b6',
     welcomeEmbedTitle: "Witaj na serwerze %GUILD_NAME%, %NAME%!",
@@ -65,5 +71,8 @@ Ze względu na błędne kodowanie znaków przez Excela, zaleca się otworzyć li
     persenceCsvFirstRow: "lp,nazwa discorda,przypisana specjalizacja\n",
     persenceFilename: "obecnosc.csv",
 
-    tableGetFail: "Nie udało się przetworzyć podanego arkusza."
+    tableGetFail: "Nie udało się przetworzyć podanego arkusza.",
+    tableNotEnoughArguments: "Za mało argumentów.",
+
+    autotableReserved: "zarezerwowane"
 }
