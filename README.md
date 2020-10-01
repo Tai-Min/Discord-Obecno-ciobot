@@ -4,6 +4,7 @@ Bot stworzony w celu uproszczenia procesu prowadzenia zajęć na platformie Disc
 ## Możliwości
 #### Dla prowadzących:
 * Generowanie listy obecności osób z rolą studenta przebywających na kanale głosowym - plik csv o strukturze:<br/> lp,imie nazwisko,przydzielona specjalizacja.
+* Generowanie tabel na podstawie dokumentu Google Spreadsheets.
 
 #### Dla administratorów:
 * Komenda pozwalająca na automatyczne przydzielanie specjalizacji studentom przy użyciu reakcji.
@@ -26,12 +27,14 @@ Po rozpakowaniu repozytorium należy zmienić nazwę pliku example_config.json n
   * rolesToRemove - Zbiór identyfikatorów ról, których dana specjalizacja mieć nie powinna. Przykładowo mogą to być identyfikatory ról innych specjalizacji. Otrzymywane tak, jak adminRoles.
 * statusMsg - Wiadomość wyświetlana pod nickiem bota.
 * commandPrefix - Ciąg znaków, które powinny pojawić się na początku wiadomości, aby bot zareagował na komendę.
+* spreadsheetsApiKey - Klucz api z https://console.developers.google.com/?hl=PL z włączonym api do Google Spreadsheets. Opcjonalne, używane w przypadku wykreślania tabel za pomocą komendy tableCommand.
 
 ### strings.js
 * aboutCommand - Komenda wyświetlająca informacje o bocie.
 * helpCommand - Komenda wyświetlająca dostępne dla danej roli komendy.
 * assigmentCommand - Komenda włączająca bądź wyłączająca możliwość wyboru specjalizacji.
 * persenceCommand - Komenda generująca plik csv z frekwencją na kanale głosowym, na którym znajduje się osoba wywołująca komendę.
+* tableCommand - Komenda wykreślająca tabelę z danego zakresu komórek z Google Spreadsheets.
 * welcomeEmbedDescriptionForPresenters - Wiadomość powitalna dla wykładowców.
 * welcomeEmbedDescriptionForStudents - Wiadomość powitalna dla studentów.
 <br/>

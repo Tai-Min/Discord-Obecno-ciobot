@@ -30,5 +30,7 @@
     ],
 
     "statusMsg":"SAMPLE TEXT",
-    "commandPrefix":">"
+    "commandPrefix":">",
+
+    "spreadsheetsApiKey": "<CONSOLE GOOGLE API KEY WITH SPREADSHEETS ENABLED>"
 }

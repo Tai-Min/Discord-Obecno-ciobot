@@ -9,6 +9,7 @@ class RoleAssigmentCommand extends Command {
         super();
         this.commandName = strings.assigmentCommand;
         this.reqRole = "admin";
+        this.descriptionString = strings.assigmentDescription;
     }
 
     exec(bot, msg, args) {
@@ -56,10 +57,6 @@ class RoleAssigmentCommand extends Command {
         msg.delete();
 
         return true;
-    }
-
-    description() {
-        return strings.assigmentDescription;
     }
 }
 

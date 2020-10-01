@@ -4,6 +4,7 @@ class Command {
     constructor(){
         this.commandName = "command"
         this.reqRole = "admin";
+        this.descriptionString = "Something went wrong :/";
     }
     
     replyThenDelete(msg, content, timeout, attachment){
@@ -28,7 +29,7 @@ class Command {
             })
         }
         else{
-            msg.reply(content).then(()=>{
+            msg.reply(content).then((reply)=>{
                 msg.delete();
             })
         }
@@ -49,7 +50,7 @@ class Command {
     }
 
     description(){
-        return "Something went wrong :/";
+        return this.descriptionString;
     }
 }
 

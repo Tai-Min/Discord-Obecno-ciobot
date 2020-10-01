@@ -3,11 +3,17 @@ module.exports = {
     helpCommand: 'pomoc',
     assigmentCommand: 'specki',
     persenceCommand: 'obecnosc',
+    tableCommand: 'tabela',
 
     aboutDescription: 'Zwraca informacje o tym bocie.',
     helpDescription: 'Wyświetla dostępne komendy dla tego bota.',
     assigmentDescription: 'Włącza bądź wyłącza możliwość przypisania specjalizacji.',
     persenceDescription: 'Generuje plik csv z listą studentów znajdujących się na kanale głosowym.',
+    tableDescription: `Generuje tabelę z danymi wyciągniętymi z Google Spreadsheets. 
+Format:
+>tabela <Identyfikator arkusza, tzn długi ciąg znaków z udostępnionego linku> <Zakres komórek>. 
+Przykładowo:
+>tabela 1VPo5JEN_iWghirM4BxpTOWmlgtWU6mZNSYaEyZiQg_I Arkusz1!A1:D5`,
 
     welcomeEmbedColor: '#9b59b6',
     welcomeEmbedTitle: "Witaj na serwerze %GUILD_NAME%, %NAME%!",
@@ -18,11 +24,11 @@ Jestem automatem wspomagającym sprawdzanie obecności podczas zajęć prowadzon
     welcomeEmbedForPresenters: "JEŻELI JESTEŚ PROWADZĄCYM",
     welcomeEmbedDescriptionForPresenters: `
 Wkrótce otrzymasz rangę prowadzącego umożliwiającą dołączanie do głosowych oraz tekstowych kanałów wykładowych.
-Po otrzymaniu rangi wykładowcy, włączona zostanie komenda ">obecnosc", której użycie na kanale głosowym wygeneruje listę studentów znajdujących się na tym kanale.`,
+Po otrzymaniu rangi wykładowcy, otrzymasz możliwość użycia komendy ">obecnosc", która użyta podczas obecności na kanale głosowym wygeneruje listę studentów znajdujących się na tym samym kanale.`,
     welcomeEmbedForStudents: "JEŻELI JESTEŚ STUDENTEM",
     welcomeEmbedDescriptionForStudents: `
-Aby otrzymać rolę studenta oraz uzyskać dostęp do kanałów Twojej specjalizacji, przejdź na kanał "wybór-specjalizacji" i kliknij na reakcję odpowiadającą Twojej specjalizacji.
-WAŻNE! Podczas ewentualnej kontroli frekwencji na wykładzie najpierw brany jest pod uwagę twój pseudonim a w przypadku jego braku - tag Discorda. Aby mieć pewność, że zostaniesz odpowiednio wpisany/a na listę obecności, zmień swój pseudonim klikając prawym przyciskiem myszy na swoje konto (na liście studentów, po prawej stronie) i wybierz opcję "Zmiana pseudonimu" i ustaw pseudonim na swoje imię i nazwisko.`,
+Aby otrzymać rolę studenta oraz uzyskać dostęp do kanałów specjalizacji, przejdź na kanał "wybór-specjalizacji" i kliknij na reakcję odpowiadającą Twojej specjalizacji.
+WAŻNE! Podczas ewentualnej kontroli frekwencji na wykładzie najpierw brany jest pod uwagę twój pseudonim a w przypadku jego braku - tag Discorda. Aby mieć pewność, że zostaniesz odpowiednio wpisany/a na listę obecności, zmień swój pseudonim klikając prawym przyciskiem myszy na swoje konto (na liście studentów, po prawej stronie), wybierz opcję "Zmiana pseudonimu" i ustaw pseudonim na swoje imię i nazwisko.`,
     welcomeEmbedFinish: `
 Z pozdrowieniami,
 %BOT_NAME%`,
@@ -57,5 +63,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     persenceSuccessMsg: `Lista obecności w załączniku.
 Ze względu na błędne kodowanie znaków przez Excela, zaleca się otworzyć listę obecności najpierw w notatniku i z notatnika przekleić do Excela.`,
     persenceCsvFirstRow: "lp,nazwa discorda,przypisana specjalizacja\n",
-    persenceFilename: "obecnosc.csv"
+    persenceFilename: "obecnosc.csv",
+
+    tableGetFail: "Nie udało się przetworzyć podanego arkusza."
 }

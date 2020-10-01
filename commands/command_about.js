@@ -7,6 +7,7 @@ class AboutCommand extends Command {
         super();
         this.commandName = strings.aboutCommand;
         this.reqRole = "all";
+        this.descriptionString = strings.aboutDescription;
     }
 
     exec(bot, msg, args) {
@@ -15,10 +16,6 @@ class AboutCommand extends Command {
         .setFooter(strings.aboutEmbedFooter, strings.aboutEmbedFooterImage);
         this.replyThenDelete(msg, embed, 60000);
         return true;
-    }
-
-    description(){
-        return strings.aboutDescription;
     }
 }
 

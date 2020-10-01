@@ -9,6 +9,7 @@ class PersenceCheckCommand extends Command {
         super();
         this.commandName = strings.persenceCommand;
         this.reqRole = "presenter";
+        this.descriptionString = strings.persenceDescription;
     }
 
     exec(bot, msg, args) {
@@ -46,10 +47,6 @@ class PersenceCheckCommand extends Command {
         this.reply(msg, strings.persenceSuccessMsg, {"files":[{attachment: buf, name: filename}]});
 
         return true;
-    }
-
-    description() {
-        return strings.persenceDescription;
     }
 }
 

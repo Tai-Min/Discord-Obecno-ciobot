@@ -10,6 +10,7 @@ class HelpCommand extends Command {
         this.commandName = strings.helpCommand;
         this.otherCommands = otherCommands;
         this.reqRole = "all";
+        this.descriptionString = strings.helpDescription;
     }
 
     exec(bot, msg, args) {
@@ -34,10 +35,6 @@ class HelpCommand extends Command {
         bot.sendLogs(name + " used help command.");
         this.replyThenDelete(msg, embed, 60000);
         return true;
-    }
-
-    description(){
-        return strings.helpDescription;
     }
 }
 

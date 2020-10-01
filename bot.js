@@ -5,12 +5,14 @@ const Discord = require('discord.js');
 const HelpCommand = require('./commands/command_help.js');
 const AboutCommand = require('./commands/command_about.js');
 const RoleAssigmentCommand = require('./commands/command_role_assigment.js');
-const PersenceCheckCommand = require('./commands/command_persence_check');
+const PersenceCheckCommand = require('./commands/command_persence_check.js');
+const TableCommand = require('./commands/command_table.js');
 
 aboutCommand = new AboutCommand();
 roleAssigmentCommand = new RoleAssigmentCommand();
 persenceCheckCommand = new PersenceCheckCommand();
-commands = [aboutCommand, roleAssigmentCommand, persenceCheckCommand]; // commands available to this bot
+tableCommand = new TableCommand();
+commands = [aboutCommand, roleAssigmentCommand, persenceCheckCommand, tableCommand]; // commands available to this bot
 
 helpCommand = new HelpCommand(commands)
 commands.unshift(helpCommand); // add help command
@@ -28,7 +30,7 @@ class Bot {
                 }
             });
 
-            this.sendLogs("Bot running.");
+            //this.sendLogs("Bot running.");
         });
 
         // message callback to process commands from guild and dm's
@@ -96,7 +98,7 @@ class Bot {
         for (let i = 0; i < config["specs"].length; i++) {
             if(config["specs"][i].reaction === reaction._emoji.name){
                 
-                this.sendLogs(name + " changed it's role to " + config["specs"][i].name + ".");
+                this.sendLogs(name + " changed role to " + config["specs"][i].name + ".");
 
                 // remove unwanted roles
                 for(let j = 0; j < config["specs"][i]["rolesToRemove"].length; j++){
@@ -130,7 +132,6 @@ class Bot {
     }
 
     processCommand(msg, command, args) {
-        //this.greetNewUser(msg.member);
         for(let i = 0; i < this.commands.length; i++){
             if(this.commands[i].commandName === command){
                 commands[i].exec(this, msg, args)
