@@ -16,9 +16,9 @@ class AutoTableCommand extends Command {
         this.descriptionString = strings.autoTableDescription;
     }
 
-    setClientStartUpdater(client){
+    setClientStartUpdater(client) {
         this.client = client;
-        setInterval(()=>{
+        setInterval(() => {
             this.updateTables();
         }, 600000); // 10 minutes
     }
@@ -63,23 +63,23 @@ class AutoTableCommand extends Command {
                     return channel.messages.fetch(tabData.msgIds[msgId])
                 })
                 .then((msg) => {
-                    if (msgId < resultsArr.length && msg.content !== resultsArr[msgId]){
+                    if (msgId < resultsArr.length && msg.content !== resultsArr[msgId]) {
                         msg.edit(resultsArr[msgId]);
                     }
-                    else if(msg.content !== strings.autotableReserved){
+                    else if (msg.content !== strings.autotableReserved) {
                         msg.edit(strings.autotableReserved);
                     }
                 })
-                .catch(()=>{
+                .catch(() => {
                     jsonfile.readFile('./autotables/autotables.json')
-                    .then((obj)=>{
-                        for(let i = 0; i < obj.root.length; i++){
-                            if(lodash.isEqual(obj.root[i], tabData)){
-                                obj.root.splice(i, 1);
-                                jsonfile.writeFileSync('./autotables/autotables.json', obj);
+                        .then((obj) => {
+                            for (let i = 0; i < obj.root.length; i++) {
+                                if (lodash.isEqual(obj.root[i], tabData)) {
+                                    obj.root.splice(i, 1);
+                                    jsonfile.writeFileSync('./autotables/autotables.json', obj);
+                                }
                             }
-                        }
-                    });
+                        });
                 })
         }
     }
@@ -111,6 +111,11 @@ class AutoTableCommand extends Command {
             });
     }
 
+    tryFetch(url) {
+        return fetch(url, { method: "Get" })
+        .then(data => data.json())
+    }
+
     exec(bot, msg, args) {
         const name = msg.member.nickname ? msg.member.nickname : msg.member.user.username;
         if (!this.canUseCommand(msg.member)) {
@@ -129,31 +134,45 @@ class AutoTableCommand extends Command {
         const numMessages = args[2];
         const url = 'https://sheets.googleapis.com/v4/spreadsheets/' + spreadsheetId + '/values/' + cellRange + '?key=' + config['spreadsheetsApiKey'];
 
-        let promises = [];
-        for (let i = 0; i < numMessages; i++) {
-            promises.push(msg.channel.send(strings.autotableReserved));
-        }
-        Promise.all(promises)
-            .then((messages) => {
-                const data = {
-                    url: url,
-                    channelId: msg.channel.id,
-                    msgIds: messages.map(message => message.id),
+        // check if url can be fetched
+        this.tryFetch(url)
+            .then((data) => { // if yes then add endpoint to list of autotables
+                if(!data.values){
+                    this.replyThenDelete(msg, strings.tableGetFail, 10000);
+                    return false;
                 }
-                if (!fs.existsSync('./autotables/autotables.json')) {
-                    fs.mkdirSync("./autotables");
-                    fs.writeFileSync('./autotables/autotables.json', "{\"root\" : []}");
+                
+                let promises = [];
+                for (let i = 0; i < numMessages; i++) {
+                    promises.push(msg.channel.send(strings.autotableReserved));
                 }
-                jsonfile.readFile('./autotables/autotables.json')
-                    .then((obj) => {
-                        obj.root.push(data);
-                        jsonfile.writeFileSync('./autotables/autotables.json', obj);
-                        this.updateTables();
-                        bot.sendLogs(name + " generated autotable in channel " + msg.channel.name);
+                Promise.all(promises)
+                    .then((messages) => {
+                        const data = {
+                            url: url,
+                            channelId: msg.channel.id,
+                            msgIds: messages.map(message => message.id),
+                        }
+                        if (!fs.existsSync('./autotables/autotables.json')) {
+                            fs.mkdirSync("./autotables");
+                            fs.writeFileSync('./autotables/autotables.json', "{\"root\" : []}");
+                        }
+                        jsonfile.readFile('./autotables/autotables.json')
+                            .then((obj) => {
+                                obj.root.push(data);
+                                jsonfile.writeFileSync('./autotables/autotables.json', obj);
+                                this.updateTables();
+                                bot.sendLogs(name + " generated autotable in channel " + msg.channel.name);
+                            })
+                            .catch((err) => {
+                                this.replyThenDelete(strings.tableGetFail);
+                            })
                     })
-                    .catch((err) => {
-                        this.replyThenDelete(strings.tableGetFail);
-                    })
+                msg.delete();
+            })
+            .catch(() => {
+                this.replyThenDelete(msg, strings.tableGetFail, 10000);
+                return false;
             })
     }
 }
