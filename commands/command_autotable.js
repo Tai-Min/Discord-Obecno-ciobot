@@ -136,7 +136,7 @@ class AutoTableCommand extends Command {
         const numMessages = args[2];
         const url = 'https://sheets.googleapis.com/v4/spreadsheets/' + spreadsheetId + '/values/' + cellRange + '?key=' + config['spreadsheetsApiKey'];
 
-        if(args.length === 1){
+        if(args.length === 0){
             this.updateTables();
             msg.delete();
             return true;
