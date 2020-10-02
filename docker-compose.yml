@@ -6,4 +6,6 @@ services:
     working_dir: /home/node
     environment:
       - NODE_ENV=production
+    volumes:
+      - ./autotables:/home/node/autotables
     restart: unless-stopped
