@@ -63,11 +63,13 @@ class AutoTableCommand extends Command {
                     return channel.messages.fetch(tabData.msgIds[msgId])
                 })
                 .then((msg) => {
-                    if (msgId < resultsArr.length && msg.content !== resultsArr[msgId]) {
-                        msg.edit(resultsArr[msgId]);
+                    if (msgId < resultsArr.length) {
+                        if(msg.content !== resultsArr[msgId])
+                            msg.edit(resultsArr[msgId]);
                     }
-                    else if (msg.content !== strings.autotableReserved) {
-                        msg.edit(strings.autotableReserved);
+                    else {
+                        if(msg.content !== strings.autotableReserved)
+                            msg.edit(strings.autotableReserved);
                     }
                 })
                 .catch(() => {
@@ -124,7 +126,7 @@ class AutoTableCommand extends Command {
             return false;
         }
 
-        if (args.length < 3) {
+        if (args.length !== 3 && args.length !== 0) {
             bot.sendLogs(name + " tried to use " + this.commandName + " but provided not enough arguments.");
             this.replyThenDelete(msg, strings.tableNotEnoughArguments, 10000);
         }
@@ -133,6 +135,12 @@ class AutoTableCommand extends Command {
         const cellRange = args[1];
         const numMessages = args[2];
         const url = 'https://sheets.googleapis.com/v4/spreadsheets/' + spreadsheetId + '/values/' + cellRange + '?key=' + config['spreadsheetsApiKey'];
+
+        if(args.length === 1){
+            this.updateTables();
+            msg.delete();
+            return true;
+        }
 
         // check if url can be fetched
         this.tryFetch(url)
