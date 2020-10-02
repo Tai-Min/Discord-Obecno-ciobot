@@ -19,7 +19,8 @@ Przykładowo:
 Format:
 >autotabela <Identyfikator arkusza, tzn długi ciąg znaków z udostępnionego linku> <Zakres komórek> <Ilość wiadomości przeznaczonych na tabelę>
 Przykładowo:
->tabela 1VPo5JEN_iWghirM4BxpTOWmlgtWU6mZNSYaEyZiQg_I Arkusz1!A1:D5 3`,
+>autotabela 1VPo5JEN_iWghirM4BxpTOWmlgtWU6mZNSYaEyZiQg_I Arkusz1!A1:D5 3
+Wywołanie tej funkcji bez argumentów aktualizuje istniejące tabele.`,
 
     welcomeEmbedColor: '#9b59b6',
     welcomeEmbedTitle: "Witaj na serwerze %GUILD_NAME%, %NAME%!",
