@@ -20,7 +20,7 @@ class AutoTableCommand extends Command {
         this.client = client;
         setInterval(()=>{
             this.updateTables();
-        }, 600000); // one hour
+        }, 600000); // 10 minutes
     }
 
     equalizeArrays(arr) {
@@ -63,14 +63,14 @@ class AutoTableCommand extends Command {
                     return channel.messages.fetch(tabData.msgIds[msgId])
                 })
                 .then((msg) => {
-                    if (msgId < resultsArr.length){
+                    if (msgId < resultsArr.length && msg.content !== resultsArr[msgId]){
                         msg.edit(resultsArr[msgId]);
                     }
-                    else{
-                        msg.edit(".");
+                    else if(msg.content !== strings.autotableReserved){
+                        msg.edit(strings.autotableReserved);
                     }
                 })
-                .catch((err)=>{
+                .catch(()=>{
                     jsonfile.readFile('./autotables/autotables.json')
                     .then((obj)=>{
                         for(let i = 0; i < obj.root.length; i++){
@@ -99,7 +99,6 @@ class AutoTableCommand extends Command {
     }
 
     updateTables() {
-        console.log("Update...");
         if (!fs.existsSync('./autotables/autotables.json'))
             return;
 
@@ -132,7 +131,7 @@ class AutoTableCommand extends Command {
 
         let promises = [];
         for (let i = 0; i < numMessages; i++) {
-            promises.push(msg.channel.send("."));
+            promises.push(msg.channel.send(strings.autotableReserved));
         }
         Promise.all(promises)
             .then((messages) => {
