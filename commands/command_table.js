@@ -67,7 +67,15 @@ class TableCommand extends Command {
             .then((json) => {
                 this.equalizeArrays(json.values);
 
-                const result = table(json.values);
+                let config = {
+                    columns: {}
+                }
+                for(let i = 1; i < json.values[0].length; i++){
+                    config.columns[i] = {width: 15, truncate: 45};
+                }
+                console.log(config);
+
+                const result = table(json.values, config);
                 const resultsArr = this.splitTable(result);
 
                 let promises = [];

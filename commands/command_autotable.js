@@ -93,7 +93,15 @@ class AutoTableCommand extends Command {
             .then((json) => {
                 // process spreadsheet into messages
                 this.equalizeArrays(json.values);
-                const result = table(json.values);
+                
+                let config = {
+                    columns: {}
+                }
+                for(let i = 1; i < json.values[0].length; i++){
+                    config.columns[i] = {width: 15, truncate: 45};
+                }
+
+                const result = table(json.values, config);
                 const resultsArr = this.splitTable(result);
                 // edit messages
                 this.editMessages(tabData, resultsArr);
