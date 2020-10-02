@@ -1,4 +1,4 @@
-const Command = require('./command.js');
+const TableCommand = require('./command_table.js');
 const config = require("../config/config.json");
 const strings = require('../config/strings.js');
 const fetch = require('node-fetch');
@@ -7,7 +7,7 @@ const fs = require('fs');
 const jsonfile = require('jsonfile');
 const lodash = require('lodash')
 
-class AutoTableCommand extends Command {
+class AutoTableCommand extends TableCommand {
     constructor(client) {
         super();
         this.client = undefined;
@@ -21,39 +21,6 @@ class AutoTableCommand extends Command {
         setInterval(() => {
             this.updateTables();
         }, 600000); // 10 minutes
-    }
-
-    equalizeArrays(arr) {
-        let maxLen = 0;
-        for (let i = 0; i < arr.length; i++) {
-            if (arr[i].length > maxLen)
-                maxLen = arr[i].length;
-        }
-
-        for (let i = 0; i < arr.length; i++) {
-            arr[i].push(...Array(maxLen - arr[i].length).fill(" "));
-        }
-    }
-
-    splitTable(tab) {
-        const lines = tab.split("\n");
-
-        let cntr = 0;
-        let resArr = [];
-        while (cntr < lines.length) {
-            let res = "```";
-            while (res.length + lines[cntr].length + 1 + 3 < 2000 && cntr < lines.length) {
-                res += lines[cntr] + "\n";
-                cntr++;
-                if (cntr >= lines.length)
-                    break;
-            }
-            res += "```";
-
-            resArr.push(res);
-        }
-
-        return resArr;
     }
 
     editMessages(tabData, resultsArr) {

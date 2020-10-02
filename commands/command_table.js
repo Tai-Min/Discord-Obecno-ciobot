@@ -73,7 +73,6 @@ class TableCommand extends Command {
                 for(let i = 1; i < json.values[0].length; i++){
                     config.columns[i] = {width: 11, truncate: 33, wrapWord: true};
                 }
-                console.log(config);
 
                 const result = table(json.values, config);
                 const resultsArr = this.splitTable(result);
