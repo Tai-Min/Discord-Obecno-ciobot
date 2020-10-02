@@ -20,8 +20,8 @@ helpCommand = new HelpCommand(commands)
 commands.unshift(helpCommand); // add help command
 
 class Bot {
-    constructor(discord, token, statusMsg, commandPrefix, commands, guildId, logChannelId, voteChannelId, mentionChannelId) {
-        this.client = new discord.Client();
+    constructor(token, statusMsg, commandPrefix, commands, guildId, logChannelId, voteChannelId, mentionChannelId) {
+        this.client = new Discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
 
         // ready callback to set presence
         this.client.on('ready', () => {
@@ -53,12 +53,27 @@ class Bot {
         });
 
         this.client.on('messageReactionAdd', (reaction, user) =>{
-            // ignore reactions when there is no voting active
-            if(this.voteMsg === undefined)
+            if(user.bot)
                 return;
 
-            if(reaction.message.id === this.voteMsg.id && !user.bot){
-                this.assignRole(reaction, user);
+            if (reaction.partial) {
+                // If the message this reaction belongs to was removed the fetching might result in an API error, which we need to handle
+                try {
+                    reaction.fetch().then(()=>{
+                        if(reaction.message.author.id === this.client.user.id && reaction.message.embeds.length === 1){
+                            if(reaction.message.embeds[0].title === strings.votingEmbedTitle)
+                                this.assignRole(reaction, user);
+                        }
+                    });
+                } catch (error) {
+                    return;
+                }
+            }
+            else{
+                if(reaction.message.author.id === this.client.user.id && reaction.message.embeds.length === 1){
+                    if(reaction.message.embeds[0].title === strings.votingEmbedTitle)
+                        this.assignRole(reaction, user);
+                }
             }
         });
 
@@ -80,7 +95,6 @@ class Bot {
 
         this.commandPrefix = commandPrefix;
         this.commands = commands;
-        this.voteMsg = undefined;
     }
 
     sendLogs(msg) {
@@ -144,7 +158,6 @@ class Bot {
 }
 
 bot = new Bot(
-    Discord, 
     config["botToken"], 
     config["statusMsg"],
     config["commandPrefix"], 

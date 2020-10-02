@@ -20,21 +20,6 @@ class RoleAssigmentCommand extends Command {
             return false;
         }
 
-        // stop voting
-        if(bot.voteMsg !== undefined){
-            bot.sendLogs(name + " disabled spec voting.");
-            bot.voteMsg.delete()
-            .then(()=>{
-                bot.voteMsg = undefined;
-                msg.delete();
-            })
-            .catch(()=>{
-                bot.voteMsg = undefined;
-                this.exec(bot, msg, args)
-            });
-            return true;
-        }
-
         // start voting
         let description = "";
         for (let i = 0; i < config["specs"].length; i++) {
@@ -50,7 +35,6 @@ class RoleAssigmentCommand extends Command {
             for (let i = 0; i < config["specs"].length; i++) {
                 votingMsg.react(config["specs"][i].reaction);
             }
-            bot.voteMsg = votingMsg;
         });
         
         bot.sendLogs(name + " enabled spec voting.");
