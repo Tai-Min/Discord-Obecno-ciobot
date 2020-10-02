@@ -8,4 +8,5 @@ services:
       - NODE_ENV=production
     volumes:
       - ./autotables:/home/node/autotables
+      - ./config:/home/node/config
     restart: unless-stopped
