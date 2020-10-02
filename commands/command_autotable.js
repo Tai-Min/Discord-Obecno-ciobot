@@ -98,7 +98,7 @@ class AutoTableCommand extends Command {
                     columns: {}
                 }
                 for(let i = 1; i < json.values[0].length; i++){
-                    config.columns[i] = {width: 15, truncate: 45};
+                    config.columns[i] = {width: 11, truncate: 33, wrapWord: true};
                 }
 
                 const result = table(json.values, config);
