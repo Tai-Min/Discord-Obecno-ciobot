@@ -47,7 +47,7 @@ const isStudent = (member) => {
 
 const getSpec = (member)=>{
     if (member.bot === true)
-        return false;
+        return "";
     
     const specs = config["specs"];
     for(let i = 0; i < specs.length; i++){

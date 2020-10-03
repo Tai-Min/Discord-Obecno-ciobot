@@ -1,4 +1,5 @@
 module.exports = {
+    // command names
     aboutCommand: 'info',
     helpCommand: 'pomoc',
     assigmentCommand: 'specki',
@@ -6,6 +7,7 @@ module.exports = {
     tableCommand: 'tabela',
     autoTableCommand: 'autotabela',
 
+    // command descriptions for help command
     aboutDescription: 'Zwraca informacje o tym bocie.',
     helpDescription: 'Wyświetla dostępne komendy dla tego bota.',
     assigmentDescription: 'Włącza bądź wyłącza możliwość przypisania specjalizacji.',
@@ -22,7 +24,14 @@ Przykładowo:
 >autotabela 1VPo5JEN_iWghirM4BxpTOWmlgtWU6mZNSYaEyZiQg_I Arkusz1!A1:D5 3
 Wywołanie tej funkcji bez argumentów aktualizuje istniejące tabele.`,
 
-    welcomeEmbedColor: '#9b59b6',
+    // embed stuff
+    embedImage: "",
+    embedColor: '#9b59b6',
+    embedFooter: "https://github.com/Tai-Min/Discord-Obecnosciobot",
+    embedFooterImage: "",
+
+    // welcome message strings
+    welcomeImage: "",
     welcomeEmbedTitle: "Witaj na serwerze %GUILD_NAME%, %NAME%!",
     welcomeEmbedDescription: `
 Jestem automatem wspomagającym sprawdzanie obecności podczas zajęć prowadzonych na tym serwerze.
@@ -39,10 +48,8 @@ WAŻNE! Podczas ewentualnej kontroli frekwencji na wykładzie najpierw brany jes
     welcomeEmbedFinish: `
 Z pozdrowieniami,
 %BOT_NAME%`,
-    welcomeImage: "",
-    welcomeEmbedFooter: "https://github.com/Tai-Min/Discord-Obecnosciobot",
-    welcomeEmbedFooterImage: "",
 
+    // about command strings
     aboutEmbedMsg: `
 Bot stworzony w celu sprawdzania obecności na zajęciach online na drugim semestrze studiow magisterskich na Wydziale Elektrotechniki i Automatyki Politechniki Gdańskiej.
 https://github.com/Tai-Min/Discord-Obecnosciobot
@@ -53,27 +60,39 @@ Copyright (c) 2020 Mateusz Pająk
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.`, 
-    aboutEmbedFooter: "https://github.com/Tai-Min/Discord-Obecnosciobot",
-    aboutEmbedFooterImage: "",
-
-    helpEmbedColor: '#9b59b6',
+    
+    // help command strings
     helpEmbedTitle: "Pomoc",
     helpEmbedDescription: "Poniżej znajdują się dostępne dla Ciebie komendy:",
-    helpEmbedImage: "",
-    helpEmbedFooter: "https://github.com/Tai-Min/Discord-Obecnosciobot",
-    helpEmbedFooterImage: "",
-
-    votingEmbedColor: '#9b59b6',
+    
+    // voting command strings
     votingEmbedTitle: 'Wybór specjalizacji',
 
+    // persence command strings
     persenceFailedMsg: "Wymagana obecność na kanale głosowym.",
     persenceSuccessMsg: `Lista obecności w załączniku.
-Ze względu na błędne kodowanie znaków przez Excela, zaleca się otworzyć listę obecności najpierw w notatniku i z notatnika przekleić do Excela.`,
+Ze względu na błędne kodowanie polskich znaków przez Excela, zaleca się otworzyć listę obecności najpierw w notatniku i z notatnika przekleić do Excela.`,
     persenceCsvFirstRow: "lp,nazwa discorda,przypisana specjalizacja\n",
     persenceFilename: "obecnosc.csv",
+    persenceChecked: " sprawdził obecność na kanale ",
 
+    // table command strings
     tableGetFail: "Nie udało się przetworzyć podanego arkusza.",
     tableNotEnoughArguments: "Za mało argumentów.",
+    tableGenerated: " utworzył tabelę na kanale ",
 
-    autotableReserved: "zarezerwowane"
+    // autotable command strings
+    autotableGetFail: "Nie udało się przetworzyć podanego arkusza.",
+    autotableGenerated: " utworzył automatyczną tabelę na kanale ",
+    autotableReserved: "zarezerwowane",
+    autotableUpdated: "Zaktualizowano automatyczne tabele.",
+    autotableMsgCountFail: "Liczba wiadomości powinna być większa od 0.",
+
+    // shared command strings
+    commandUsed: " wywołał komendę ",
+    commandTriedToUse: " próbował wywołać komendę ",
+    commandPermissionFail: " ale nie posiada wymaganych uprawnień.",
+    commandArgsCountFail: " ale nie podał wymaganej liczby argumentów.",
+    commandNotInVoiceChannel: " ale nie jest na kanale głosowym.",
+    commandArgsFail: " ale podał błędne argumenty."
 }

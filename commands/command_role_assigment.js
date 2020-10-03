@@ -15,9 +15,9 @@ class RoleAssigmentCommand extends Command {
     exec(bot, msg, args) {
         const name = msg.member.nickname ? msg.member.nickname : msg.member.user.username;
         if(!this.canUseCommand(msg.member)){
-            bot.sendLogs(name + " tried to use " + this.commandName + " but don't have permissions.");
+            bot.sendLogs(name + strings.commandTriedToUse + this.commandName + strings.commandPermissionFail);
             msg.delete();
-            return false;
+            return;
         }
 
         // start voting
@@ -28,8 +28,10 @@ class RoleAssigmentCommand extends Command {
 
         const embed = new Discord.MessageEmbed()
             .setTitle(strings.votingEmbedTitle)
-            .setColor(strings.votingEmbedColor)
-            .setDescription(description);
+            .setColor(strings.embedColor)
+            .setFooter(strings.embedFooter)
+            .setDescription(description)
+            .setThumbnail(strings.embedImage);
 
         bot.voteChannel.send(embed).then(votingMsg => {
             for (let i = 0; i < config["specs"].length; i++) {
@@ -37,10 +39,8 @@ class RoleAssigmentCommand extends Command {
             }
         });
         
-        bot.sendLogs(name + " enabled spec voting.");
+        bot.sendLogs(name + strings.commandUsed + this.commandName);
         msg.delete();
-
-        return true;
     }
 }
 

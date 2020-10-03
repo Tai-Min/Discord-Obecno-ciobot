@@ -15,16 +15,16 @@ class PersenceCheckCommand extends Command {
     exec(bot, msg, args) {
         const name = msg.member.nickname ? msg.member.nickname : msg.member.user.username;
         if(!this.canUseCommand(msg.member)){
-            bot.sendLogs(name + " tried to use " + this.commandName + " but don't have permissions.");
+            bot.sendLogs(name + strings.commandTriedToUse + this.commandName + strings.commandPermissionFail);
             msg.delete();
-            return false;
+            return;
         }
             
         const vChannelID = msg.member.voice.channelID;
         if(!vChannelID){
-            bot.sendLogs(name + " tried to use persence command but is not in voice channel.");
+            bot.sendLogs(name + strings.commandTriedToUse + this.commandName + strings.commandNotInVoiceChannel);
             this.replyThenDelete(msg, strings.persenceFailedMsg, 10000);
-            return false;
+            return;
         }
 
         const vChannel = bot.client.channels.cache.get(vChannelID);
@@ -43,10 +43,8 @@ class PersenceCheckCommand extends Command {
         const buf = Buffer.alloc(bufSize, 'utf-8');
         buf.write(list);
 
-        bot.sendLogs(name + " checked persence in voice channel " + vChannel.name + ".");
+        bot.sendLogs(name + strings.persenceChecked + vChannel.name + ".");
         this.reply(msg, strings.persenceSuccessMsg, {"files":[{attachment: buf, name: filename}]});
-
-        return true;
     }
 }
 

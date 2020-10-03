@@ -11,11 +11,13 @@ class AboutCommand extends Command {
     }
 
     exec(bot, msg, args) {
+        const name = msg.member.nickname ? msg.member.nickname : msg.member.user.username;
         const embed = new Discord.MessageEmbed()
         .setDescription(strings.aboutEmbedMsg)
-        .setFooter(strings.aboutEmbedFooter, strings.aboutEmbedFooterImage);
+        .setFooter(strings.embedFooter, strings.embedFooterImage)
+        .setThumbnail(strings.embedImage);
+        bot.sendLogs(name + strings.commandUsed + this.commandName);
         this.replyThenDelete(msg, embed, 60000);
-        return true;
     }
 }
 

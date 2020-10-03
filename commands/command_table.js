@@ -24,38 +24,39 @@ class TableCommand extends Command {
         }
     }
 
-    splitTable(tab){
+    splitTable(tab) {
         const lines = tab.split("\n");
 
         let cntr = 0;
         let resArr = [];
-        while(cntr < lines.length){
+        while (cntr < lines.length) {
             let res = "```";
-            while(res.length + lines[cntr].length + 1 + 3 < 2000 && cntr < lines.length){
+            while (res.length + lines[cntr].length + 1 + 3 < 2000 && cntr < lines.length) {
                 res += lines[cntr] + "\n";
                 cntr++;
-                if(cntr >= lines.length)
+                if (cntr >= lines.length)
                     break;
             }
             res += "```";
 
             resArr.push(res);
         }
-        
+
         return resArr;
     }
 
     exec(bot, msg, args) {
         const name = msg.member.nickname ? msg.member.nickname : msg.member.user.username;
         if (!this.canUseCommand(msg.member)) {
-            bot.sendLogs(name + " tried to use " + this.commandName + " but don't have permissions.");
+            bot.sendLogs(name + strings.commandTriedToUse + this.commandName + strings.commandPermissionFail);
             msg.delete();
-            return false;
+            return;
         }
 
-        if(args.length < 2){
-            bot.sendLogs(name + " tried to use " + this.commandName + " but provided not enough arguments.");
+        if (args.length < 2) {
+            bot.sendLogs(name + strings.commandTriedToUse + this.commandName + strings.commandArgsFail);
             this.replyThenDelete(msg, strings.tableNotEnoughArguments, 10000);
+            return;
         }
 
         const spreadsheetId = args[0];
@@ -70,26 +71,27 @@ class TableCommand extends Command {
                 let config = {
                     columns: {}
                 }
-                for(let i = 1; i < json.values[0].length; i++){
-                    config.columns[i] = {width: 11, truncate: 33, wrapWord: true};
+                for (let i = 1; i < json.values[0].length; i++) {
+                    config.columns[i] = { width: 11, truncate: 33, wrapWord: true };
                 }
 
                 const result = table(json.values, config);
                 const resultsArr = this.splitTable(result);
 
                 let promises = [];
-                for(let i = 0; i < resultsArr.length; i++){
+                for (let i = 0; i < resultsArr.length; i++) {
                     promises.push(msg.channel.send(resultsArr[i]));
                 }
-                Promise.all(promises)
-                .then(()=>{
-                    bot.sendLogs(name + " generated table in channel " + msg.channel.name);
-                    msg.delete();
-                })
-            }).catch(() => {
+                return Promise.all(promises)
+            })
+            .then(() => {
+                bot.sendLogs(name + strings.tableGenerated + msg.channel.name);
+                msg.delete();
+            })
+            .catch(() => {
                 this.replyThenDelete(msg, strings.tableGetFail, 10000);
-                return false;
             });
+        bot.sendLogs(name + strings.commandUsed + this.commandName);
     }
 }
 

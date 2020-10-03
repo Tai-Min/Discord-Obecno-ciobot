@@ -8,9 +8,8 @@ const jsonfile = require('jsonfile');
 const lodash = require('lodash')
 
 class AutoTableCommand extends TableCommand {
-    constructor(client) {
+    constructor() {
         super();
-        this.client = undefined;
         this.commandName = strings.autoTableCommand;
         this.reqRole = "presenter";
         this.descriptionString = strings.autoTableDescription;
@@ -31,15 +30,16 @@ class AutoTableCommand extends TableCommand {
                 })
                 .then((msg) => {
                     if (msgId < resultsArr.length) {
-                        if(msg.content !== resultsArr[msgId])
+                        if (msg.content !== resultsArr[msgId])
                             msg.edit(resultsArr[msgId]);
                     }
                     else {
-                        if(msg.content !== strings.autotableReserved)
+                        if (msg.content !== strings.autotableReserved)
                             msg.edit(strings.autotableReserved);
                     }
                 })
                 .catch(() => {
+                    // remove autotable
                     jsonfile.readFile('./autotables/autotables.json')
                         .then((obj) => {
                             for (let i = 0; i < obj.root.length; i++) {
@@ -60,17 +60,17 @@ class AutoTableCommand extends TableCommand {
             .then((json) => {
                 // process spreadsheet into messages
                 this.equalizeArrays(json.values);
-                
+
                 let config = {
                     columns: {}
                 }
-                for(let i = 1; i < json.values[0].length; i++){
-                    config.columns[i] = {width: 11, truncate: 33, wrapWord: true};
+                for (let i = 1; i < json.values[0].length; i++) {
+                    config.columns[i] = { width: 11, truncate: 33, wrapWord: true };
                 }
 
                 const result = table(json.values, config);
                 const resultsArr = this.splitTable(result);
-                // edit messages
+
                 this.editMessages(tabData, resultsArr);
             })
     }
@@ -88,75 +88,77 @@ class AutoTableCommand extends TableCommand {
             });
     }
 
-    tryFetch(url) {
-        return fetch(url, { method: "Get" })
-        .then(data => data.json())
-    }
-
     exec(bot, msg, args) {
         const name = msg.member.nickname ? msg.member.nickname : msg.member.user.username;
         if (!this.canUseCommand(msg.member)) {
-            bot.sendLogs(name + " tried to use " + this.commandName + " but don't have permissions.");
+            bot.sendLogs(name + strings.commandTriedToUse + this.commandName + strings.commandPermissionFail);
             msg.delete();
-            return false;
+            return;
         }
 
         if (args.length !== 3 && args.length !== 0) {
-            bot.sendLogs(name + " tried to use " + this.commandName + " but provided not enough arguments.");
+            bot.sendLogs(name + strings.commandTriedToUse + this.commandName + strings.commandArgsCountFail);
             this.replyThenDelete(msg, strings.tableNotEnoughArguments, 10000);
+            return;
         }
 
         const spreadsheetId = args[0];
         const cellRange = args[1];
         const numMessages = args[2];
+        if(numMessages <= 0){
+            this.replyThenDelete(msg, strings.autotableMsgCountFail, 10000);
+            bot.sendLogs(name + strings.commandTriedToUse + this.commandName + strings.commandArgsFail);
+            return;
+        }
+
         const url = 'https://sheets.googleapis.com/v4/spreadsheets/' + spreadsheetId + '/values/' + cellRange + '?key=' + config['spreadsheetsApiKey'];
 
-        if(args.length === 0){
+        if (args.length === 0) {
             this.updateTables();
-            msg.delete();
-            return true;
+            this.replyThenDelete(msg, strings.autotableUpdated, 10000);
+            bot.sendLogs(name + strings.commandUsed + this.commandName);
+            return;
         }
 
         // check if url can be fetched
-        this.tryFetch(url)
+        let messages;
+        fetch(url, { method: "Get" })
+            .then(data => data.json())
             .then((data) => { // if yes then add endpoint to list of autotables
-                if(!data.values){
-                    this.replyThenDelete(msg, strings.tableGetFail, 10000);
-                    return false;
+                if (!data.values) {
+                    throw "";
                 }
-                
+
                 let promises = [];
                 for (let i = 0; i < numMessages; i++) {
                     promises.push(msg.channel.send(strings.autotableReserved));
                 }
-                Promise.all(promises)
-                    .then((messages) => {
-                        const data = {
-                            url: url,
-                            channelId: msg.channel.id,
-                            msgIds: messages.map(message => message.id),
-                        }
-                        if (!fs.existsSync('./autotables/autotables.json')) {
-                            fs.mkdirSync("./autotables");
-                            fs.writeFileSync('./autotables/autotables.json', "{\"root\" : []}");
-                        }
-                        jsonfile.readFile('./autotables/autotables.json')
-                            .then((obj) => {
-                                obj.root.push(data);
-                                jsonfile.writeFileSync('./autotables/autotables.json', obj);
-                                this.updateTables();
-                                bot.sendLogs(name + " generated autotable in channel " + msg.channel.name);
-                            })
-                            .catch((err) => {
-                                this.replyThenDelete(strings.tableGetFail);
-                            })
-                    })
+                return Promise.all(promises)
+            })
+            .then((msgs) => {
+                messages = msgs
+                if (!fs.existsSync('./autotables/autotables.json')) {
+                    fs.mkdirSync("./autotables");
+                    fs.writeFileSync('./autotables/autotables.json', "{\"root\" : []}");
+                }
+                return jsonfile.readFile('./autotables/autotables.json')
+            })
+            .then((obj) => {
+                const data = {
+                    url: url,
+                    channelId: msg.channel.id,
+                    msgIds: messages.map(message => message.id),
+                }
+                obj.root.push(data);
+                jsonfile.writeFileSync('./autotables/autotables.json', obj);
+                this.updateTables();
+                bot.sendLogs(name + strings.autotableGenerated + msg.channel.name);
                 msg.delete();
             })
             .catch(() => {
-                this.replyThenDelete(msg, strings.tableGetFail, 10000);
-                return false;
+                this.replyThenDelete(msg, strings.autotableGetFail, 10000);
             })
+        bot.sendLogs(name + strings.commandUsed + this.commandName);
     }
 }
 

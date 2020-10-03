@@ -46,7 +46,6 @@ class Command {
     }
 
     exec(bot, msg, args){
-        return true;
     }
 
     description(){

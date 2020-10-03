@@ -16,11 +16,11 @@ class HelpCommand extends Command {
     exec(bot, msg, args) {
         const name = msg.member.nickname ? msg.member.nickname : msg.member.user.username;
         const embed = new Discord.MessageEmbed()
-        .setColor(strings.helpEmbedColor)
+        .setColor(strings.embedColor)
         .setTitle(strings.helpEmbedTitle)
         .setDescription(strings.helpEmbedDescription)
-        .setFooter(strings.helpEmbedFooter, strings.helpEmbedFooterImage)
-        .setThumbnail(strings.helpEmbedImage)
+        .setFooter(strings.embedFooter, strings.embedFooterImage)
+        .setThumbnail(strings.embedImage)
         for(let i = 0; i < this.otherCommands.length; i++){
             // only admin can use those commands
             if(helpers.isAdmin(msg.member) && this.otherCommands[i].reqRole === "admin")
@@ -32,9 +32,8 @@ class HelpCommand extends Command {
             else if(this.otherCommands[i].reqRole === "all")
                 embed.addField(config.commandPrefix + this.otherCommands[i].commandName, this.otherCommands[i].description(), false);
         }
-        bot.sendLogs(name + " used help command.");
+        bot.sendLogs(name + strings.commandUsed + this.commandName);
         this.replyThenDelete(msg, embed, 60000);
-        return true;
     }
 }
 
