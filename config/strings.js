@@ -68,6 +68,10 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     // voting command strings
     votingEmbedTitle: 'Wybór specjalizacji',
 
+    // voting logs
+    votingPresenterTriedRoleChange: " próbował zmienić rolę ale ma rangę wykładowcy.",
+    votingRoleChanges: " zmienił rolę na ",
+
     // persence command strings
     persenceFailedMsg: "Wymagana obecność na kanale głosowym.",
     persenceSuccessMsg: `Lista obecności w załączniku.

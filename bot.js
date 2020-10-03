@@ -109,7 +109,7 @@ class Bot {
         const name = member.nickname ? member.nickname : member.user.username;
 
         if (helpers.isPresenter(member)) {
-            this.sendLogs("Presenter " + name + " tried to assign spec role.")
+            this.sendLogs(name + strings.votingPresenterTriedRoleChange);
             return;
         }
 
@@ -117,7 +117,7 @@ class Bot {
         for (let i = 0; i < config["specs"].length; i++) {
             if (config["specs"][i].reaction === reaction._emoji.name) {
 
-                this.sendLogs(name + " changed role to " + config["specs"][i].name + ".");
+                this.sendLogs(name + strings.votingRoleChanges + config["specs"][i].name + ".");
 
                 // remove unwanted roles
                 for (let j = 0; j < config["specs"][i]["rolesToRemove"].length; j++) {
